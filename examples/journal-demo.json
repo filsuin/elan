@@ -1,0 +1,105 @@
+{
+  "format": "elan-personal-journal",
+  "schemaVersion": 1,
+  "settings": {
+    "firstName": "Camille",
+    "theme": "SYSTEM",
+    "dynamicColors": true
+  },
+  "routines": [
+    {
+      "id": "pause",
+      "title": "Prendre une minute pour respirer naturellement"
+    },
+    {
+      "id": "intention",
+      "title": "Choisir une intention réaliste"
+    },
+    {
+      "id": "movement",
+      "title": "Faire une pause et bouger à mon rythme"
+    },
+    {
+      "id": "kindness",
+      "title": "M'accorder un petit moment agréable"
+    }
+  ],
+  "days": [
+    {
+      "date": "2026-09-26",
+      "mood": 4,
+      "note": "Une promenade au calme.",
+      "tags": [
+        "Repos"
+      ],
+      "victory": "J’ai pris une vraie pause.",
+      "completedTaskIds": [
+        "pause"
+      ]
+    },
+    {
+      "date": "2026-09-27",
+      "mood": 3,
+      "note": "Journee ordinaire.",
+      "tags": [
+        "Repos"
+      ],
+      "victory": "",
+      "completedTaskIds": []
+    },
+    {
+      "date": "2026-09-28",
+      "mood": 2,
+      "note": "Une journee chargee.",
+      "tags": [
+        "Repos"
+      ],
+      "victory": "J’ai pris une vraie pause.",
+      "completedTaskIds": [
+        "pause"
+      ]
+    },
+    {
+      "date": "2026-09-29",
+      "mood": 3,
+      "note": "Une pause bienvenue.",
+      "tags": [
+        "Repos"
+      ],
+      "victory": "",
+      "completedTaskIds": []
+    },
+    {
+      "date": "2026-09-30",
+      "mood": 4,
+      "note": "Une bonne conversation.",
+      "tags": [
+        "Repos"
+      ],
+      "victory": "J’ai pris une vraie pause.",
+      "completedTaskIds": [
+        "pause"
+      ]
+    },
+    {
+      "date": "2026-10-01",
+      "mood": null,
+      "note": "",
+      "tags": [],
+      "victory": "",
+      "completedTaskIds": []
+    },
+    {
+      "date": "2026-10-02",
+      "mood": 4,
+      "note": "Du temps pour moi.",
+      "tags": [
+        "Repos"
+      ],
+      "victory": "J’ai pris une vraie pause.",
+      "completedTaskIds": [
+        "pause"
+      ]
+    }
+  ]
+}

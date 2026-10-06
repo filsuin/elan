@@ -1,0 +1,53 @@
+PASS: four default routines
+PASS: unique routine identifiers
+PASS: empty initial journal
+PASS: missing date is not persisted on read
+PASS: routine checked
+PASS: new day resets checks
+PASS: victory trimmed
+PASS: mood saved
+PASS: note trimmed
+PASS: save mood preserves routine
+PASS: save mood preserves victory
+PASS: upsert has no duplicate dates
+PASS: remove mood clears note and tags
+PASS: remove mood preserves victory
+PASS: remove mood preserves routine
+PASS: routine can be unchecked
+PASS: custom routine trimmed
+PASS: rename keeps stable identifier
+PASS: delete routine cleans references
+PASS: blank routine rejected
+PASS: oversized routine rejected
+PASS: duplicate identifier rejected
+PASS: unknown toggle rejected
+PASS: zero mood rejected
+PASS: mood above five rejected
+PASS: unknown tag rejected
+PASS: oversized note rejected
+PASS: maximum note accepted
+PASS: oversized victory rejected
+PASS: seven-day history exact boundary
+PASS: thirty-day history exact boundary
+PASS: history excludes future dates
+PASS: history descending
+PASS: nonpositive filter rejected
+PASS: daily tip deterministic
+PASS: daily tip rotates
+PASS: negative epoch still valid
+PASS: leap day works
+PASS: all yoga identifiers unique
+PASS: six yoga guides
+PASS: all yoga guides have precautions and four steps
+PASS: timer starts
+PASS: seconds round up
+PASS: delayed tick has no cumulative drift
+PASS: pause accounts for elapsed time
+PASS: paused tick changes nothing
+PASS: resume preserves remaining duration
+PASS: timer reaches zero without going negative
+PASS: finished timer requires reset
+PASS: reset restores full duration
+PASS: zero duration rejected
+
+51 checks passed.

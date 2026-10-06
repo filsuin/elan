@@ -1,0 +1,45 @@
+services:
+  elan-api:
+    build: .
+    container_name: elan-api
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      elan-db:
+        condition: service_healthy
+    networks:
+      - elan-internal
+      - proxy
+    expose:
+      - "8080"
+
+  elan-db:
+    image: postgres:17-alpine
+    container_name: elan-db
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - elan-postgres:/var/lib/postgresql/data
+      - ./src/main/resources/db/migration/V1__create_daily_ideas.sql:/docker-entrypoint-initdb.d/V1__create_daily_ideas.sql:ro
+    networks:
+      - elan-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  elan-postgres:
+
+networks:
+  elan-internal:
+    internal: true
+  proxy:
+    external: true
