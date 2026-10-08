@@ -2,6 +2,11 @@
 
 ## Effectivement exécuté
 
+- Build Android complet `:app:assembleDebug` avec Android SDK 36 et JDK 21 le 8 octobre 2026.
+- Tests unitaires Gradle `:app:testDebugUnitTest` réussis.
+- Android Lint `:app:lintDebug` réussi avec 0 erreur. Les avertissements restants signalent principalement des versions de dépendances plus récentes.
+- 4 tests d'interface `:app:connectedDebugAndroidTest` réussis sur un Pixel 8 sous Android 17 : humeur, catalogue yoga, ajout de routine et modification d'une victoire passée.
+- APK 0.2.0 installé avec succès par ADB sur l'appareil de test, avec conservation des données (`adb install -r`).
 - Compilation du code **Kotlin pur** du domaine et des catalogues avec Kotlin CLI 1.9.0 / OpenJDK 21.
 - **51 contrôles de logique réussis** avec `tools/DomainSmokeTest.kt` : mises à jour, absence de doublons, préservation des champs, nouveaux jours, limites de saisie, filtres historiques, rotation des conseils, catalogue yoga et minuteur monotone.
 - Analyse syntaxique de tous les fichiers Kotlin/Kotlin DSL avec le parseur Kotlin : aucune erreur de syntaxe.
@@ -9,21 +14,17 @@
 
 Le journal d'exécution des 51 contrôles est dans `domain-test-results.txt`.
 
-## Non exécuté : ne pas confondre avec les contrôles ci-dessus
+## Vérifications restant à effectuer
 
-- Synchronisation Gradle, résolution effective des dépendances et compilation de l'APK Android.
-- Android Lint.
-- Tests JVM Gradle utilisant la vraie bibliothèque org.json.
-- Tests d'interface sur émulateur ou téléphone.
 - Inspection visuelle d'un rendu Android réel, validation TalkBack et essais d'import/export via le sélecteur système.
-- Exécution des scripts PowerShell/Windows et téléchargement du wrapper officiel.
-
-Le conteneur ne possédait pas le SDK Android et ses accès aux téléchargements Gradle/Google/GitHub n'ont pas abouti. **Aucun APK n'est donc fourni et la compilation de l'ensemble n'est pas certifiée.** Un contrôle de syntaxe n'est pas une résolution des types/API Compose.
+- Validation sur Android 8, Android 11 et Android 12+, ainsi qu'avec une taille de police à 200 %, en paysage et sur petit écran.
+- Parcours manuel complet d'import/export, espace disque insuffisant, changement de date et reprise après arrêt du processus.
+- Relecture des contenus yoga par une personne qualifiée.
 
 ## Checklist avant diffusion
 
-- [ ] Préparer le wrapper, synchroniser puis exécuter `:app:testDebugUnitTest :app:lintDebug :app:assembleDebug`.
-- [ ] Exécuter `:app:connectedDebugAndroidTest` sur un émulateur.
+- [x] Préparer le wrapper, synchroniser puis exécuter `:app:testDebugUnitTest :app:lintDebug :app:assembleDebug`.
+- [x] Exécuter `:app:connectedDebugAndroidTest` sur un appareil de test.
 - [ ] Tester Android 8/11 (couleurs de repli), Android 12+ (couleurs dynamiques), ainsi qu'un appareil Android récent.
 - [ ] Vérifier clair/sombre, changement de fond d'écran, paysage, petit écran, taille de police 200 %, clavier et TalkBack.
 - [ ] Ajouter, renommer, cocher et supprimer une routine ; quitter complètement l'app puis la rouvrir.

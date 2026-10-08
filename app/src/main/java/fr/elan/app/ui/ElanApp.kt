@@ -120,7 +120,7 @@ fun ElanApp(vm: ElanViewModel = viewModel()) {
                                             onMood = { selectedTab = Tab.MOOD.name }, onYoga = { selectedTab = Tab.YOGA.name },
                                         )
                                         Tab.YOGA -> YogaScreen { id -> vm.selectPose(id); selectedPose = id }
-                                        Tab.MOOD -> MoodScreen(current, today, vm::saveMood, vm::deleteMood)
+                                        Tab.MOOD -> MoodScreen(current, today, vm::saveMood, vm::deleteMood, vm::saveVictory)
                                     }
                                 }
                             }

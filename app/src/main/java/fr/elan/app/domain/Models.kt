@@ -42,6 +42,9 @@ data class DayEntry(
         require(mood == null || mood in 1..5) { "Humeur invalide" }
         require(note.length <= MAX_NOTE_LENGTH && victory.length <= MAX_NOTE_LENGTH)
     }
+
+    fun isEmpty(): Boolean =
+        mood == null && note.isBlank() && tags.isEmpty() && victory.isBlank() && completedTaskIds.isEmpty()
 }
 
 data class AppSnapshot(

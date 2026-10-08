@@ -6,6 +6,7 @@ import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.core.Serializer
 import androidx.datastore.dataStoreFile
 import fr.elan.app.domain.AppSnapshot
+import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 
@@ -13,7 +14,17 @@ object SnapshotSerializer : Serializer<AppSnapshot> {
     override val defaultValue = AppSnapshot()
     override suspend fun readFrom(input: InputStream): AppSnapshot {
         // I/O errors propagate as such. Only invalid JSON/schema is reported as corruption.
-        val text = input.readBytes().toString(Charsets.UTF_8)
+        val output = ByteArrayOutputStream()
+        val buffer = ByteArray(8192)
+        while (true) {
+            val count = input.read(buffer)
+            if (count < 0) break
+            if (output.size().toLong() + count > SnapshotJson.MAX_IMPORT_BYTES) {
+                throw CorruptionException("Le journal local dépasse la taille maximale autorisée.")
+            }
+            output.write(buffer, 0, count)
+        }
+        val text = output.toString(Charsets.UTF_8.name())
         return try { SnapshotJson.decode(text) }
         catch (error: Exception) {
             throw CorruptionException("Le journal ne peut pas être lu. Aucune donnée n'a été effacée.", error)

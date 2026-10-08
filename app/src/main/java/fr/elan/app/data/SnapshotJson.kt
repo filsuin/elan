@@ -8,6 +8,7 @@ import org.json.JSONObject
 object SnapshotJson {
     const val FORMAT = "elan-personal-journal"
     const val MAX_IMPORT_BYTES = 10 * 1024 * 1024
+    const val MAX_DAYS = 20_000
 
     fun encode(snapshot: AppSnapshot): String = JSONObject().apply {
         put("format", FORMAT)
@@ -56,11 +57,12 @@ object SnapshotJson {
         require(routines.map { it.id }.distinct().size == routines.size) { "Identifiants dupliqués" }
         val ids = routines.map { it.id }.toSet()
         val entriesJson = obj.getJSONArray("days")
+        require(entriesJson.length() <= MAX_DAYS) { "La sauvegarde contient trop de journées" }
         val days = LinkedHashMap<String, DayEntry>()
         for (i in 0 until entriesJson.length()) {
             val day = entriesJson.getJSONObject(i)
-            val tags = strings(day.getJSONArray("tags"))
-            val completed = strings(day.getJSONArray("completedTaskIds"))
+            val tags = strings(day.getJSONArray("tags"), moodTags.size, "Trop de thèmes d'humeur")
+            val completed = strings(day.getJSONArray("completedTaskIds"), MAX_ROUTINES, "Trop de routines cochées")
             require(tags.all { it in moodTags }) { "Thème d'humeur inconnu" }
             require(completed.all { it in ids }) { "Routine référencée introuvable" }
             val mood = if (day.isNull("mood")) null else day.getInt("mood")
@@ -76,6 +78,10 @@ object SnapshotJson {
         return AppSnapshot(settings = settings, routines = routines, days = days)
     }
 
-    private fun strings(array: JSONArray): Set<String> =
-        (0 until array.length()).map { array.getString(it) }.toSet()
+    private fun strings(array: JSONArray, maximum: Int, error: String): Set<String> {
+        require(array.length() <= maximum) { error }
+        val values = (0 until array.length()).map { array.getString(it) }
+        require(values.distinct().size == values.size) { "Valeurs dupliquées dans la sauvegarde" }
+        return values.toSet()
+    }
 }

@@ -35,4 +35,16 @@ class SnapshotJsonTest {
         val obj = JSONObject(SnapshotJson.encode(AppSnapshot())).put("format", "not-elan")
         SnapshotJson.decode(obj.toString())
     }
+    @Test(expected = IllegalArgumentException::class) fun duplicateTagsAreRejected() {
+        val date = LocalDate.of(2026, 10, 2)
+        val state = JournalActions.saveMood(AppSnapshot(), date, 3, "", setOf("Repos"))
+        val obj = JSONObject(SnapshotJson.encode(state))
+        obj.getJSONArray("days").getJSONObject(0).put("tags", org.json.JSONArray(listOf("Repos", "Repos")))
+        SnapshotJson.decode(obj.toString())
+    }
+    @Test(expected = IllegalArgumentException::class) fun oversizedFirstNameIsRejected() {
+        val obj = JSONObject(SnapshotJson.encode(AppSnapshot()))
+        obj.getJSONObject("settings").put("firstName", "x".repeat(31))
+        SnapshotJson.decode(obj.toString())
+    }
 }

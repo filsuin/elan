@@ -1,1 +1,4 @@
-<resources><string name="app_name">Élan</string></resources>
+<resources>
+    <string name="app_name">Élan</string>
+    <string name="app_version">Élan · version %1$s</string>
+</resources>

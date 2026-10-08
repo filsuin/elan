@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.unit.dp
 import fr.elan.app.domain.*
@@ -27,6 +28,7 @@ fun MoodScreen(
     snapshot: AppSnapshot, today: LocalDate,
     onSave: (LocalDate, Int, String, Set<String>) -> Unit,
     onDelete: (LocalDate) -> Unit,
+    onSaveVictory: (LocalDate, String) -> Unit,
 ) {
     var window by rememberSaveable { mutableIntStateOf(30) }
     var editDate by rememberSaveable { mutableStateOf<String?>(null) }
@@ -39,7 +41,11 @@ fun MoodScreen(
                 (window == 0 || day >= today.minusDays(window.toLong() - 1))
         }.sortedByDescending { it.date }
     }
-    LazyColumn(contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+    LazyColumn(
+        modifier = Modifier.testTag("mood_list"),
+        contentPadding = PaddingValues(20.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
+    ) {
         item {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Mon humeur", style = MaterialTheme.typography.headlineLarge)
@@ -77,7 +83,7 @@ fun MoodScreen(
                 Text("Les humeurs et victoires enregistrées apparaîtront dans cet espace.") } }
         }
         items(history, key = { it.date }) { day ->
-            Card(onClick = { editDate = day.date }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp),
+            Card(onClick = { editDate = day.date }, modifier = Modifier.fillMaxWidth().testTag("history_${day.date}"), shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
                 Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -106,18 +112,34 @@ fun MoodScreen(
         }
     }
     editDate?.let { date ->
-        val editing = snapshot.entry(LocalDate.parse(date))
+        val editingDate = LocalDate.parse(date)
+        val editing = snapshot.entry(editingDate)
+        var victory by rememberSaveable(date) { mutableStateOf(editing.victory) }
         AlertDialog(onDismissRequest = { editDate = null },
-            title = { Text(fullDate(LocalDate.parse(date))) },
+            title = { Text(fullDate(editingDate)) },
             text = {
                 Column(Modifier.heightIn(max = 520.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     MoodEditor(editing) { score, note, tags ->
-                        onSave(LocalDate.parse(date), score, note, tags)
+                        onSave(editingDate, score, note, tags)
                         editDate = null
                     }
-                    if (editing.victory.isNotBlank()) {
-                        Text("Petite victoire", style = MaterialTheme.typography.titleMedium)
-                        Text(editing.victory)
+                    HorizontalDivider()
+                    Text("Petite victoire", style = MaterialTheme.typography.titleMedium)
+                    OutlinedTextField(
+                        value = victory,
+                        onValueChange = { victory = it.take(MAX_NOTE_LENGTH) },
+                        modifier = Modifier.fillMaxWidth().testTag("historical_victory_field"),
+                        label = { Text("Une chose faite, tentée ou traversée") },
+                        minLines = 2,
+                        maxLines = 6,
+                        supportingText = { Text("${victory.length} / $MAX_NOTE_LENGTH") },
+                    )
+                    Button(
+                        onClick = { onSaveVictory(editingDate, victory); editDate = null },
+                        modifier = Modifier.fillMaxWidth().testTag("save_historical_victory"),
+                        enabled = victory.trim() != editing.victory,
+                    ) {
+                        Text(if (victory.isBlank()) "Effacer ma petite victoire" else "Enregistrer ma petite victoire")
                     }
                     if (editing.mood != null) TextButton(onClick = { deleteDate = date; editDate = null }) {
                         Text("Supprimer cette humeur", color = MaterialTheme.colorScheme.error)
@@ -139,14 +161,14 @@ fun MoodScreen(
 private fun MoodEditor(initial: DayEntry, onSave: (Int, String, Set<String>) -> Unit) {
     var selected by rememberSaveable(initial.date) { mutableStateOf(initial.mood) }
     var note by rememberSaveable(initial.date) { mutableStateOf(initial.note) }
-    var tags by rememberSaveable(initial.date) { mutableStateOf(ArrayList(initial.tags)) }
+    var tags: List<String> by rememberSaveable(initial.date) { mutableStateOf(initial.tags.toList()) }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         MoodSelector(selected) { selected = it }
         Text("Qu'est-ce qui a compté ?", style = MaterialTheme.typography.titleSmall)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             moodTags.forEach { tag ->
                 FilterChip(selected = tag in tags,
-                    onClick = { tags = ArrayList(if (tag in tags) tags - tag else tags + tag) },
+                    onClick = { tags = if (tag in tags) tags - tag else tags + tag },
                     label = { Text(tag) })
             }
         }

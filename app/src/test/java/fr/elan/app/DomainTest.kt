@@ -27,6 +27,11 @@ class DomainTest {
         val data = JournalActions.saveVictory(AppSnapshot(), day, "Rested")
         assertEquals("Rested", JournalActions.removeMood(data, day).entry(day).victory)
     }
+    @Test fun clearingLastValueRemovesEmptyDay() {
+        val data = JournalActions.saveVictory(AppSnapshot(), day, "Rested")
+        val cleared = JournalActions.saveVictory(data, day, "   ")
+        assertFalse(cleared.days.containsKey(day.toString()))
+    }
     @Test fun calendarDaySelectionIsDeterministic() {
         assertEquals(DailyContent.tip(day), DailyContent.tip(day))
         assertNotEquals(DailyContent.tip(day), DailyContent.tip(day.plusDays(1)))

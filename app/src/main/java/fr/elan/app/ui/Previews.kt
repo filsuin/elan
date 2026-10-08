@@ -28,7 +28,7 @@ private fun DarkHomePreview() {
 @Preview(name = "Humeur", showBackground = true, widthDp = 393, heightDp = 852)
 @Composable
 private fun MoodPreview() {
-    ElanTheme(UserSettings(dynamicColors = false)) { MoodScreen(AppSnapshot(), previewDay, { _, _, _, _ -> }, {}) }
+    ElanTheme(UserSettings(dynamicColors = false)) { MoodScreen(AppSnapshot(), previewDay, { _, _, _, _ -> }, {}, { _, _ -> }) }
 }
 
 @Preview(name = "Yoga", showBackground = true, widthDp = 393, heightDp = 852)

@@ -2,7 +2,7 @@
 
 Une base native Android en français, construite avec **Kotlin, Jetpack Compose et Material 3 / Material You**. Sans compte, sans serveur, sans publicité et sans clé API. L'application fonctionne hors ligne après installation.
 
-**Important : cette archive contient le code source, pas un APK compilé.** Le SDK Android n'était pas disponible dans l'environnement de génération et les téléchargements des outils de build n'ont pas abouti. La compilation Android et le rendu sur appareil restent donc à vérifier. Voir `docs/VALIDATION.md` pour les contrôles effectivement effectués.
+Le projet produit un APK de développement dans `app/build/outputs/apk/debug/app-debug.apk`. La version 0.2.0 a été compilée, analysée par Android Lint et testée sur un Pixel 8 sous Android 17 le 8 octobre 2026. Voir `docs/VALIDATION.md` pour le détail et les vérifications qui restent à effectuer avant une diffusion publique.
 
 ## Démarrage sur Windows
 

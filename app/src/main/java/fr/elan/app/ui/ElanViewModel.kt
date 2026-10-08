@@ -59,13 +59,35 @@ class ElanViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun perform(success: String? = null, action: suspend () -> Unit) {
+    private fun perform(
+        success: String? = null,
+        failureMessage: (Throwable) -> String = ::defaultFailureMessage,
+        action: suspend () -> Unit,
+    ) {
         viewModelScope.launch {
             try { action(); if (success != null) messages.send(success) }
             catch (cancel: CancellationException) { throw cancel }
-            catch (_: IOException) { messages.send("Enregistrement impossible. Vérifie l'espace disponible et réessaie.") }
-            catch (_: Exception) { messages.send("L'opération n'a pas abouti. Vérifie les informations ou le fichier choisi.") }
+            catch (error: Exception) { messages.send(failureMessage(error)) }
         }
+    }
+
+    private fun defaultFailureMessage(error: Throwable): String = when (error) {
+        is IOException -> "Enregistrement impossible. Vérifie l'espace disponible et réessaie."
+        is IllegalArgumentException -> error.message ?: "Les informations saisies ne sont pas valides."
+        else -> "L'opération n'a pas abouti. Réessaie."
+    }
+
+    private fun importFailureMessage(error: Throwable): String = when (error) {
+        is SecurityException -> "Accès au fichier refusé. Choisis de nouveau la sauvegarde."
+        is IOException -> "Impossible de lire ce fichier. Vérifie qu'il est encore accessible."
+        is IllegalArgumentException -> "Sauvegarde refusée : ${error.message ?: "contenu invalide"}."
+        else -> "Sauvegarde invalide ou incomplète. Le journal actuel n'a pas été modifié."
+    }
+
+    private fun exportFailureMessage(error: Throwable): String = when (error) {
+        is SecurityException -> "Accès à l'emplacement refusé. Choisis un autre dossier."
+        is IOException -> "Export impossible. Vérifie l'espace disponible et l'emplacement choisi."
+        else -> "La sauvegarde n'a pas pu être exportée. Réessaie."
     }
 
     fun toggleTask(date: LocalDate, id: String) = perform {
@@ -80,7 +102,10 @@ class ElanViewModel(application: Application) : AndroidViewModel(application) {
     fun deleteRoutine(id: String) = perform("Routine supprimée") {
         repository.update { JournalActions.removeRoutine(it, id) }
     }
-    fun saveVictory(date: LocalDate, text: String) = perform("Petite victoire enregistrée") {
+    fun saveVictory(date: LocalDate, text: String) = perform(
+        if (text.isBlank()) "Petite victoire effacée" else "Petite victoire enregistrée",
+    ) {
+        require(date <= LocalDate.now()) { "Impossible de modifier une date future" }
         repository.update { JournalActions.saveVictory(it, date, text) }
     }
     fun saveMood(date: LocalDate, mood: Int, note: String, tags: Set<String>) = perform("Humeur enregistrée") {
@@ -101,7 +126,7 @@ class ElanViewModel(application: Application) : AndroidViewModel(application) {
         pauseTimer()
     }
 
-    fun exportTo(uri: Uri) = perform("Sauvegarde exportée") {
+    fun exportTo(uri: Uri) = perform("Sauvegarde exportée", ::exportFailureMessage) {
         _busy.value = true
         try {
             val current = repository.data.first()
@@ -113,7 +138,7 @@ class ElanViewModel(application: Application) : AndroidViewModel(application) {
         } finally { _busy.value = false }
     }
 
-    fun prepareImport(uri: Uri) = perform {
+    fun prepareImport(uri: Uri) = perform(failureMessage = ::importFailureMessage) {
         _busy.value = true
         try {
             val imported = withContext(Dispatchers.IO) {

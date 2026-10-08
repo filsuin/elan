@@ -11,7 +11,10 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import fr.elan.app.BuildConfig
+import fr.elan.app.R
 import fr.elan.app.domain.ThemeMode
 import fr.elan.app.domain.UserSettings
 
@@ -61,7 +64,7 @@ fun SettingsDialog(
                     Text("Effacer toutes mes données", color = MaterialTheme.colorScheme.error)
                 }
                 HorizontalDivider()
-                Text("Élan · version 0.1.0", style = MaterialTheme.typography.labelLarge)
+                Text(stringResource(R.string.app_version, BuildConfig.VERSION_NAME), style = MaterialTheme.typography.labelLarge)
                 Text("Une base d'application de bien-être, pas un dispositif médical. Les exercices sont des suggestions facultatives. Le yoga doit être adapté à tes possibilités ; un accompagnement qualifié est préférable pour débuter.", style = MaterialTheme.typography.bodySmall)
                 Text("Repères éditoriaux : NHS, Raising low self-esteem ; NCCIH, Yoga: Effectiveness and Safety. Textes et schémas originaux, non validés cliniquement.", style = MaterialTheme.typography.bodySmall)
             }

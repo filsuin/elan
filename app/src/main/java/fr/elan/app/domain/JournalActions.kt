@@ -6,7 +6,8 @@ import java.time.LocalDate
 object JournalActions {
     private fun updateDay(s: AppSnapshot, day: LocalDate, transform: (DayEntry) -> DayEntry): AppSnapshot {
         val entry = transform(s.entry(day))
-        return s.copy(days = s.days + (day.toString() to entry))
+        val days = if (entry.isEmpty()) s.days - day.toString() else s.days + (day.toString() to entry)
+        return s.copy(days = days)
     }
 
     fun saveMood(s: AppSnapshot, day: LocalDate, score: Int, note: String, tags: Set<String>): AppSnapshot {
