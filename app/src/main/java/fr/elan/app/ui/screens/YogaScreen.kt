@@ -12,6 +12,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import fr.elan.app.content.*
 import fr.elan.app.domain.*
@@ -35,7 +36,7 @@ fun YogaScreen(
         YogaCatalog.search(query, level?.let(YogaLevel::valueOf), category?.let(YogaCategory::valueOf),
             if (onlyFavorites) snapshot.favoritePoseIds else null)
     }
-    LazyColumn(Modifier.testTag("yoga_list"), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    LazyColumn(Modifier.testTag("yoga_list"), contentPadding = screenContentPadding(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item {
             Text("Bouger à ton rythme.", style = MaterialTheme.typography.headlineLarge)
             Text("48 fiches · 10 parcours · tes séances", color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -82,16 +83,17 @@ fun YogaScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             PoseIllustration(pose.id, pose.title, Modifier.width(108.dp).height(84.dp))
                             Column(Modifier.weight(1f)) {
-                                Text(pose.title, style = MaterialTheme.typography.titleMedium)
-                                Text("${pose.level.label} · ${pose.category.label}", style = MaterialTheme.typography.bodySmall)
-                                Text("${pose.seconds} s" + if (pose.bilateral) " par côté" else "", style = MaterialTheme.typography.labelMedium)
+                                Text(pose.title, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                                Text("${pose.level.label} · ${pose.category.label}", style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                                Text("${pose.seconds} s" + if (pose.bilateral) " par côté" else "", style = MaterialTheme.typography.labelMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }
                             IconButton(onClick = { onFavorite(pose.id) }) {
                                 Icon(if (pose.id in snapshot.favoritePoseIds) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
                                     if (pose.id in snapshot.favoritePoseIds) "Retirer ${pose.title} des favoris" else "Ajouter ${pose.title} aux favoris")
                             }
                         }
-                        Text(pose.focus.joinToString(" · "), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        Text(pose.focus.joinToString(" · "), color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
                     }
                 }
             }
@@ -134,7 +136,7 @@ fun YogaScreen(
 @Composable
 fun YogaDetailScreen(pose: YogaPose, favorite: Boolean, onFavorite: () -> Unit, onPractice: (Int) -> Unit) {
     var duration by rememberSaveable(pose.id) { mutableStateOf(pose.seconds) }
-    LazyColumn(contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+    LazyColumn(contentPadding = screenContentPadding(), verticalArrangement = Arrangement.spacedBy(18.dp)) {
         item { Text(pose.title, style = MaterialTheme.typography.headlineLarge)
             Text(pose.sanskrit, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text("${pose.level.label} · ${pose.category.label}", style = MaterialTheme.typography.labelLarge) }
@@ -178,7 +180,7 @@ fun YogaSessionScreen(session: YogaSession, onStart: (Int, Int) -> Unit, onDupli
     var percent by rememberSaveable(session.id) { mutableStateOf(100) }
     var transition by rememberSaveable(session.id) { mutableStateOf(10) }
     val plan = remember(session, percent, transition) { PracticeCatalog.yogaPlan(session, transition, percent) }
-    LazyColumn(contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    LazyColumn(contentPadding = screenContentPadding(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item { Text(session.title, style = MaterialTheme.typography.headlineLarge); Text(session.description) }
         item { ElanCard {
             Text("${formatDuration(plan.plannedSeconds.toLong())} de pratique", style = MaterialTheme.typography.titleLarge)

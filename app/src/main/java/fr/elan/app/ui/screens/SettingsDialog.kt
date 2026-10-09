@@ -20,6 +20,8 @@ import fr.elan.app.BuildConfig
 import fr.elan.app.R
 import fr.elan.app.domain.ThemeMode
 import fr.elan.app.domain.UserSettings
+import fr.elan.app.ui.components.dialogContentMaxHeight
+import fr.elan.app.ui.components.dialogContentMaxHeight
 
 @Composable
 fun SettingsDialog(
@@ -36,7 +38,7 @@ fun SettingsDialog(
     AlertDialog(onDismissRequest = onDismiss,
         title = { Text("Mon espace") },
         text = {
-            Column(Modifier.heightIn(max = 560.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Column(Modifier.heightIn(max = dialogContentMaxHeight(560.dp)).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 OutlinedTextField(value = name, onValueChange = { name = it.take(30) }, label = { Text("Mon prénom (facultatif)") },
                     singleLine = true, modifier = Modifier.fillMaxWidth())
                 TextButton(onClick = { onUpdate(settings.copy(firstName = name)) }, enabled = name.trim() != settings.firstName) {

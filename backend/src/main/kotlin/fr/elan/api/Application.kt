@@ -18,12 +18,16 @@ import io.ktor.server.response.respond
 import io.ktor.server.response.respondFile
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
+import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.sql.Connection
 import java.io.File
 import java.time.LocalDate
+import java.security.MessageDigest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.sql.DataSource
 
 @Serializable
@@ -43,6 +47,9 @@ data class ErrorResponse(val error: String)
 
 @Serializable
 data class AppUpdateResponse(val versionCode: Int, val versionName: String, val downloadPageUrl: String)
+
+@Serializable
+data class AppUpdateNotificationResponse(val sent: Boolean, val messageId: String)
 
 private data class Idea(val id: Long, val title: String, val text: String, val source: String)
 
@@ -79,6 +86,34 @@ fun Application.module(dataSource: DataSource = createDataSource()) {
                 call.respond(HttpStatusCode.ServiceUnavailable, ErrorResponse("Aucune APK de mise à jour n'est configurée."))
             } else {
                 call.respond(AppUpdateResponse(update.versionCode, update.versionName, "${update.publicBaseUrl}/app/download"))
+            }
+        }
+
+        post("/api/v1/app-update/notify") {
+            val expectedToken = System.getenv("APP_UPDATE_NOTIFY_TOKEN")
+            val suppliedToken = call.request.headers[HttpHeaders.Authorization]
+                ?.takeIf { it.startsWith("Bearer ") }?.removePrefix("Bearer ")
+            if (expectedToken.isNullOrBlank()) {
+                call.respond(HttpStatusCode.ServiceUnavailable, ErrorResponse("L'envoi de notifications n'est pas configuré."))
+            } else if (suppliedToken == null || !MessageDigest.isEqual(
+                    suppliedToken.toByteArray(Charsets.UTF_8), expectedToken.toByteArray(Charsets.UTF_8),
+                )
+            ) {
+                call.respond(HttpStatusCode.Unauthorized, ErrorResponse("Non autorisé."))
+            } else {
+                val update = configuredAppUpdate()
+                if (update == null) {
+                    call.respond(HttpStatusCode.ServiceUnavailable, ErrorResponse("Aucune APK valide n'est configurée."))
+                } else {
+                    try {
+                        val messageId = withContext(Dispatchers.IO) {
+                            sendUpdateNotification(update.versionCode, update.versionName, "${update.publicBaseUrl}/app/download")
+                        }
+                        call.respond(HttpStatusCode.Accepted, AppUpdateNotificationResponse(true, messageId))
+                    } catch (_: Exception) {
+                        call.respond(HttpStatusCode.ServiceUnavailable, ErrorResponse("Échec de l'envoi FCM. Vérifie la configuration Firebase du serveur."))
+                    }
+                }
             }
         }
 

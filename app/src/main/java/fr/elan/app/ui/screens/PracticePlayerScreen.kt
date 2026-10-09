@@ -31,7 +31,7 @@ fun PracticePlayerScreen(
     val step = player.step
     val pose = step.poseId?.let(YogaCatalog::find)
     val nextPose = player.plan.steps.drop(player.index + 1).firstOrNull { it.isPractice }
-    LazyColumn(contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+    LazyColumn(contentPadding = screenContentPadding(), verticalArrangement = Arrangement.spacedBy(18.dp)) {
         item {
             Text(player.plan.title, style = MaterialTheme.typography.headlineMedium)
             Text(player.plan.kind.label, style = MaterialTheme.typography.labelLarge)

@@ -49,9 +49,13 @@ Le reverse proxy doit publier `https://elan.maxremonnay.fr` en HTTPS et transfé
 Ajouter à `.env` (sans remplacer les variables PostgreSQL déjà présentes) :
 
 ```dotenv
-APP_UPDATE_VERSION_CODE=4
-APP_UPDATE_VERSION_NAME=0.3.1
+APP_UPDATE_VERSION_CODE=6
+APP_UPDATE_VERSION_NAME=0.3.3
 APP_UPDATE_PUBLIC_BASE_URL=https://elan.maxremonnay.fr
+APP_UPDATE_NOTIFY_TOKEN=<secret-long-aleatoire>
+FCM_PROJECT_ID=<id-du-projet-firebase>
 ```
 
-Pour chaque version, déposer l'APK correspondant sous `updates/elan.apk`, incrémenter `APP_UPDATE_VERSION_CODE` et modifier `APP_UPDATE_VERSION_NAME`, puis reconstruire/redémarrer `elan-api`. L'APK doit garder le même certificat de signature que la version installée. La page publique est `/app/download`; le manifeste utilisé par l'app est `/api/v1/app-update`.
+Placer la clé JSON du compte de service Firebase dans `secrets/firebase-service-account.json` sur le serveur uniquement. Le compte doit avoir le rôle Firebase Cloud Messaging API Admin. Ne jamais versionner ni inclure cette clé dans l'APK. L'application Android doit être enregistrée sous le package `fr.elan.app` et inclure `app/google-services.json`.
+
+Pour chaque version, déposer l'APK correspondant sous `updates/elan.apk`, incrémenter `APP_UPDATE_VERSION_CODE` et modifier `APP_UPDATE_VERSION_NAME`, puis reconstruire/redémarrer `elan-api`. Ensuite, appeler `POST /api/v1/app-update/notify` avec `Authorization: Bearer $APP_UPDATE_NOTIFY_TOKEN` pour envoyer immédiatement le push. L'APK doit garder le même certificat de signature que la version installée. La page publique est `/app/download`; le manifeste de secours est `/api/v1/app-update`.

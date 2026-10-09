@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "616540322523",
+    "project_id": "elan-b8aff",
+    "storage_bucket": "elan-b8aff.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:616540322523:android:124e2e7eaabdc8ecbdeafe",
+        "android_client_info": {
+          "package_name": "fr.elan.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCJXys9fjnnCvaGJeiUWDaOrRpFobtmS3s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

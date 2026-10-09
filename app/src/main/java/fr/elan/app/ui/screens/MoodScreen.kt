@@ -43,7 +43,7 @@ fun MoodScreen(
     }
     LazyColumn(
         modifier = Modifier.testTag("mood_list"),
-        contentPadding = PaddingValues(20.dp),
+        contentPadding = screenContentPadding(),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         item {
@@ -118,7 +118,7 @@ fun MoodScreen(
         AlertDialog(onDismissRequest = { editDate = null },
             title = { Text(fullDate(editingDate)) },
             text = {
-                Column(Modifier.heightIn(max = 520.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(Modifier.heightIn(max = dialogContentMaxHeight(520.dp)).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     MoodEditor(editing) { score, note, tags ->
                         onSave(editingDate, score, note, tags)
                         editDate = null
@@ -202,7 +202,7 @@ private fun MoodWeek(snapshot: AppSnapshot, today: LocalDate) {
                         }
                     } else Text("—", color = MaterialTheme.colorScheme.outline)
                 }
-                Text(date.format(weekday).removeSuffix("."), style = MaterialTheme.typography.labelSmall)
+                Text(date.format(weekday).removeSuffix(".").take(2), style = MaterialTheme.typography.labelSmall, maxLines = 1)
                 Text("${date.dayOfMonth}", style = MaterialTheme.typography.labelSmall)
             }
         }

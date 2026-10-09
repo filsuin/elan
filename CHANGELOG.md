@@ -1,5 +1,13 @@
 # Historique des modifications
 
+## 0.3.3 - 9 octobre 2026
+
+Notifications push FCM lors de la publication d'une version, avec le contrôle périodique conservé en secours. L'APK requiert la configuration Android Firebase ; l'envoi serveur requiert un compte de service gardé uniquement sur le serveur.
+
+## 0.3.2 - 9 octobre 2026
+
+Améliorations de mise en page adaptative : marges et cartes compactes sur petits écrans, dialogues ajustés à la hauteur disponible, navigation et cartes Yoga protégées contre les libellés trop longs, graphique d'humeur plus compact. `versionCode = 5`.
+
 ## 0.3.1 - 9 octobre 2026
 
 ### Mises à jour de l'application

@@ -33,7 +33,7 @@ fun HomeScreen(
     var taskDialog by rememberSaveable { mutableStateOf(false) }
     var deleteTaskId by rememberSaveable { mutableStateOf<String?>(null) }
 
-    LazyColumn(contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+    LazyColumn(contentPadding = screenContentPadding(), verticalArrangement = Arrangement.spacedBy(20.dp)) {
         item {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(frenchDate(today), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -65,9 +65,18 @@ fun HomeScreen(
         item {
             ElanCard {
                 SectionTitle("Ma routine", "Les petits gestes comptent aussi.")
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("$completed / ${snapshot.routines.size} gestes", style = MaterialTheme.typography.labelLarge)
-                    Text("Aujourd'hui", style = MaterialTheme.typography.labelMedium)
+                BoxWithConstraints(Modifier.fillMaxWidth()) {
+                    if (maxWidth < 260.dp) {
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text("$completed / ${snapshot.routines.size} gestes", style = MaterialTheme.typography.labelLarge)
+                            Text("Aujourd'hui", style = MaterialTheme.typography.labelMedium)
+                        }
+                    } else {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("$completed / ${snapshot.routines.size} gestes", style = MaterialTheme.typography.labelLarge)
+                            Text("Aujourd'hui", style = MaterialTheme.typography.labelMedium)
+                        }
+                    }
                 }
                 LinearProgressIndicator(
                     progress = { if (snapshot.routines.isEmpty()) 0f else completed.toFloat() / snapshot.routines.size },

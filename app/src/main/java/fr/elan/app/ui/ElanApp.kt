@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -71,6 +72,18 @@ fun ElanApp(vm: ElanViewModel = viewModel()) {
         notificationsAllowed = ReminderScheduler.allowed(context)
         if (granted && notificationsAllowed) vm.setReminder(true) else vm.notifyPermissionDenied()
     }
+    val updateNotificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        notificationsAllowed = ReminderScheduler.allowed(context)
+    }
+    LaunchedEffect(Unit) {
+        val asked = context.getSharedPreferences("elan-updates", android.content.Context.MODE_PRIVATE)
+            .getBoolean("notificationPermissionAsked", false)
+        if (Build.VERSION.SDK_INT >= 33 && !notificationsAllowed && !asked) {
+            context.getSharedPreferences("elan-updates", android.content.Context.MODE_PRIVATE)
+                .edit().putBoolean("notificationPermissionAsked", true).apply()
+            updateNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
     LaunchedEffect(vm) { vm.events.collect { snackbar.showSnackbar(it) } }
     LaunchedEffect(generation) { selectedPose = null; selectedSession = null; confirmExit = false; confirmDraftExit = false }
     DisposableEffect(lifecycle) {
@@ -109,7 +122,9 @@ fun ElanApp(vm: ElanViewModel = viewModel()) {
             ) },
             bottomBar = { if (!nested && snapshot != null && loadError == null) NavigationBar {
                 Tab.entries.forEach { tab -> NavigationBarItem(selected = selectedTab == tab.name, onClick = { selectedTab = tab.name },
-                    icon = { Icon(tab.icon, null) }, label = { Text(tab.title, maxLines = 1) }) }
+                    icon = { Icon(tab.icon, null) }, label = {
+                        Text(tab.title, maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis)
+                    }) }
             } },
             snackbarHost = { SnackbarHost(snackbar) },
         ) { padding ->

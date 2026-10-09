@@ -11,8 +11,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import fr.elan.app.domain.Mood
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -23,15 +25,29 @@ fun frenchDate(date: LocalDate): String = date.format(DateTimeFormatter.ofPatter
 fun fullDate(date: LocalDate): String = date.format(DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.FRENCH))
 
 @Composable
+fun screenContentPadding(): PaddingValues {
+    val compact = LocalConfiguration.current.screenWidthDp < 360
+    return PaddingValues(horizontal = if (compact) 16.dp else 20.dp, vertical = 20.dp)
+}
+
+@Composable
+fun dialogContentMaxHeight(preferred: Dp): Dp {
+    val available = (LocalConfiguration.current.screenHeightDp - 180).coerceAtLeast(120).dp
+    return minOf(preferred, available)
+}
+
+@Composable
 fun ElanCard(
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.surfaceContainerLow,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val compact = LocalConfiguration.current.screenWidthDp < 360
     Card(modifier.fillMaxWidth(), shape = RoundedCornerShape(28.dp),
         colors = CardDefaults.cardColors(containerColor = color, contentColor = contentColor)) {
-        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp), content = content)
+        Column(Modifier.padding(horizontal = if (compact) 16.dp else 20.dp, vertical = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp), content = content)
     }
 }
 
@@ -47,7 +63,7 @@ fun SectionTitle(title: String, subtitle: String? = null) {
 fun Eyebrow(icon: ImageVector, text: String) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Icon(icon, null, Modifier.size(18.dp))
-        Text(text, style = MaterialTheme.typography.labelLarge)
+        Text(text, Modifier.weight(1f), style = MaterialTheme.typography.labelLarge)
     }
 }
 

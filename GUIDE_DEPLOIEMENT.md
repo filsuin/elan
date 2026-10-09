@@ -94,7 +94,7 @@ adb devices
 adb install -r .\app\build\outputs\apk\debug\app-debug.apk
 ```
 
-`-r` demande une mise à jour avec conservation des données. Android exige notamment une signature compatible avec l'app déjà installée [3]. Cette livraison conserve `applicationId = fr.elan.app` et porte `versionCode` à 4.
+`-r` demande une mise à jour avec conservation des données. Android exige notamment une signature compatible avec l'app déjà installée [3]. Cette livraison conserve `applicationId = fr.elan.app` et porte `versionCode` à 5.
 
 **Attention à la clé debug :** deux ordinateurs peuvent signer leurs APK de développement avec des certificats différents. `INSTALL_FAILED_UPDATE_INCOMPATIBLE` peut indiquer ce problème. Réutiliser l'environnement ou la clé de signature autorisée de la version installée. Ne pas partager une clé privée dans le ZIP.
 

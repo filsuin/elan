@@ -18,7 +18,7 @@ import fr.elan.app.ui.components.*
 fun BreathingScreen(onStart: (PracticePlan) -> Unit) {
     var minutes by rememberSaveable { mutableStateOf(3) }
     var silenceMinutes by rememberSaveable { mutableStateOf(5) }
-    LazyColumn(contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+    LazyColumn(contentPadding = screenContentPadding(), verticalArrangement = Arrangement.spacedBy(18.dp)) {
         item { Text("Retrouver de l'espace.", style = MaterialTheme.typography.headlineLarge)
             Text("Respiration guidée visuellement et pauses silencieuses, sans compte ni connexion.") }
         item { ElanCard(color = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer) {

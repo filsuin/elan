@@ -1,8 +1,8 @@
-# Élan 0.3.1 - yoga, respiration et journal
+# Élan 0.3.2 - yoga, respiration et journal
 
 Application Android native en français (Kotlin, Jetpack Compose, Material 3). Cette livraison enrichit le projet `elan.zip` fourni : **48 fiches au lieu de 6, 10 parcours, séances personnalisables, respiration, suivi et rappel quotidien facultatif**. Le journal, les routines et les thèmes existants sont conservés.
 
-**Statut : APK debug 0.3.1 compilé le 9 octobre 2026.** Les tests unitaires Gradle et Android Lint réussissent. La version vérifie désormais les mises à jour sur `https://elan.maxremonnay.fr` ; déployer aussi `backend/` pour activer ces notifications.
+**Statut : version 0.3.3 en préparation.** Les notifications d'annonces passent par Firebase Cloud Messaging ; le serveur doit être configuré avec les identifiants Firebase avant l'envoi des pushes.
 
 ## Ouvrir et déployer
 
@@ -30,7 +30,7 @@ Le lecteur de pratique propose des transitions, les côtés gauche/droit, pause/
 
 ## Données et limites
 
-L'app ne crée aucun compte et ne transmet jamais le journal. Depuis la version 0.3.1, elle utilise Internet uniquement pour vérifier les mises à jour sur le backend et ouvrir la page de téléchargement de l'APK ; le dossier `backend/` doit donc être déployé pour ces notifications.
+L'app ne crée aucun compte et ne transmet jamais le journal. Les versions 0.3.3+ s'abonnent au sujet public FCM des annonces de version ; elles n'envoient ni compte, ni journal, ni sauvegarde. Les versions antérieures doivent installer une fois l'APK compatible depuis la page web pour recevoir les futures notifications push.
 
 Le stockage privé `elan-journal-v1.json` conserve son nom pour reprendre les données existantes. Le codec lit les sauvegardes v1 et v2 ; les écritures et exports utilisent v2. Une restauration remplace les données après confirmation et désactive le rappel. Le JSON exporté est en clair. Aucun mot de passe ou chiffrement applicatif n'est ajouté.
 
@@ -45,4 +45,4 @@ Le rappel est désactivé par défaut et son horaire est indicatif. Les schémas
 - Tests sans SDK : `sh tools/test-domain.sh` avec Kotlin CLI 1.9+ et JDK 17+.
 - Journal des 200 contrôles : `docs/domain-test-results.txt`.
 
-Version : `versionCode = 4`, `versionName = "0.3.1"`, identifiant conservé : `fr.elan.app`.
+Version : `versionCode = 6`, `versionName = "0.3.3"`, identifiant conservé : `fr.elan.app`.

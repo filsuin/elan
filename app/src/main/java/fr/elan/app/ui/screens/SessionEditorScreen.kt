@@ -14,6 +14,8 @@ import androidx.compose.ui.unit.dp
 import fr.elan.app.content.*
 import fr.elan.app.domain.*
 import fr.elan.app.ui.components.ElanCard
+import fr.elan.app.ui.components.dialogContentMaxHeight
+import fr.elan.app.ui.components.screenContentPadding
 
 /** Draft lives in the ViewModel, survives rotation; only Save persists it. */
 @Composable
@@ -21,7 +23,7 @@ fun SessionEditorScreen(draft: YogaSession, saving: Boolean, onChange: (YogaSess
     var adding by rememberSaveable(draft.id) { mutableStateOf(false) }
     var query by rememberSaveable(draft.id) { mutableStateOf("") }
     fun updateSteps(steps: List<YogaStep>) { onChange(draft.copy(steps = steps)) }
-    LazyColumn(contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    LazyColumn(contentPadding = screenContentPadding(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item { Text("Ma séance sur mesure", style = MaterialTheme.typography.headlineLarge)
             Text("Ajoute les postures que tu connais. Un brouillon n'est pas une séance enregistrée.") }
         item {
@@ -58,7 +60,7 @@ fun SessionEditorScreen(draft: YogaSession, saving: Boolean, onChange: (YogaSess
     if (adding) AlertDialog(onDismissRequest = { adding = false }, title = { Text("Ajouter une posture") },
         text = { Column {
             OutlinedTextField(query, { query = it.take(100) }, label = { Text("Rechercher") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-            LazyColumn(Modifier.heightIn(max = 340.dp)) {
+            LazyColumn(Modifier.heightIn(max = dialogContentMaxHeight(340.dp))) {
                 val results = YogaCatalog.search(query)
                 if (results.isEmpty()) item { Text("Aucun résultat", Modifier.padding(16.dp)) }
                 items(results, key = { it.id }) { pose ->

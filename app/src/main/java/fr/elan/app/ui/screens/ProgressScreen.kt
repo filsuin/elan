@@ -30,7 +30,7 @@ fun ProgressScreen(snapshot: AppSnapshot, today: LocalDate, onGoal: (Int) -> Uni
     val weekStart = PracticeAnalytics.weekStart(today)
     val weekSeconds = PracticeAnalytics.weekSeconds(snapshot, today)
     val goal = snapshot.settings.weeklyGoalMinutes
-    LazyColumn(contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+    LazyColumn(contentPadding = screenContentPadding(), verticalArrangement = Arrangement.spacedBy(18.dp)) {
         item { Text("Mes petits pas.", style = MaterialTheme.typography.headlineLarge)
             Text("Des repères de pratique, pas un score de santé. Les jours sans pratique ont aussi leur place.") }
         item { ElanCard(color = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer) {
