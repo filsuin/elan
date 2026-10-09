@@ -1,6 +1,9 @@
 package fr.elan.app.ui.screens
 
 import android.os.Build
+import android.app.TimePickerDialog
+import androidx.compose.ui.platform.LocalContext
+import java.util.Locale
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -23,7 +26,10 @@ fun SettingsDialog(
     settings: UserSettings, busy: Boolean,
     onUpdate: (UserSettings) -> Unit, onDismiss: () -> Unit,
     onExport: () -> Unit, onImport: () -> Unit, onErase: () -> Unit,
+    notificationsAllowed: Boolean = false,
+    onReminder: (Boolean) -> Unit = {}, onReminderTime: (Int, Int) -> Unit = { _, _ -> }, onNotificationSettings: () -> Unit = {},
 ) {
+    val context = LocalContext.current
     var name by rememberSaveable { mutableStateOf(settings.firstName) }
     var confirmErase by rememberSaveable { mutableStateOf(false) }
     var confirmExport by rememberSaveable { mutableStateOf(false) }
@@ -51,6 +57,21 @@ fun SettingsDialog(
                         enabled = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
                 }
                 HorizontalDivider()
+                Text("Mon rappel quotidien", style = MaterialTheme.typography.titleMedium)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Une invitation facultative", Modifier.weight(1f))
+                    Switch(settings.reminderEnabled, onReminder, enabled = !busy)
+                }
+                OutlinedButton(onClick = {
+                    TimePickerDialog(context, { _, hour, minute -> onReminderTime(hour, minute) },
+                        settings.reminderHour, settings.reminderMinute, true).show()
+                }, enabled = !busy) { Text("Vers " + String.format(Locale.ROOT, "%02d:%02d", settings.reminderHour, settings.reminderMinute)) }
+                Text("Heure indicative : Android peut retarder la notification pour économiser la batterie. Le rappel suit l'heure locale. Aucun rappel après un arrêt forcé avant de rouvrir l'app.", style = MaterialTheme.typography.bodySmall)
+                if (!notificationsAllowed) {
+                    Text("Notifications non autorisées par Android. Le rappel ne pourra pas s'afficher.", style = MaterialTheme.typography.bodySmall)
+                    TextButton(onClick = onNotificationSettings) { Text("Ouvrir les réglages de notification") }
+                }
+                HorizontalDivider()
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Outlined.Lock, null); Text("Mes données", style = MaterialTheme.typography.titleMedium)
                 }
@@ -58,7 +79,7 @@ fun SettingsDialog(
                 Text("La sauvegarde automatique Android est désactivée. Pense à exporter avant de désinstaller l'application ou de changer de téléphone.")
                 OutlinedButton(onClick = { confirmExport = true }, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text("Exporter ma sauvegarde JSON") }
                 OutlinedButton(onClick = onImport, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text("Restaurer une sauvegarde") }
-                Text("L'import remplace les données actuelles après confirmation. Format Élan v1, 10 Mo maximum.", style = MaterialTheme.typography.bodySmall)
+                Text("L'import remplace les données actuelles après confirmation. Formats Élan v1/v2, 10 Mo maximum. Export en v2, incluant favoris, séances, historique et réglages. Le rappel est désactivé après restauration.", style = MaterialTheme.typography.bodySmall)
                 if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
                 TextButton(onClick = { confirmErase = true }, enabled = !busy) {
                     Text("Effacer toutes mes données", color = MaterialTheme.colorScheme.error)
@@ -73,13 +94,13 @@ fun SettingsDialog(
     )
     if (confirmExport) {
         AlertDialog(onDismissRequest = { confirmExport = false }, title = { Text("Exporter des données personnelles") },
-            text = { Text("Le fichier contiendra ton prénom, tes notes, humeurs, routines et victoires en clair. Choisis un emplacement de confiance. Un fournisseur cloud sélectionné dans le sélecteur Android peut synchroniser ce fichier.") },
+            text = { Text("Le fichier contiendra ton prénom, tes notes, humeurs, routines, victoires, favoris, séances, historique et réglages en clair. Choisis un emplacement de confiance. Un fournisseur cloud sélectionné dans le sélecteur Android peut synchroniser ce fichier.") },
             confirmButton = { TextButton(onClick = { confirmExport = false; onExport() }) { Text("Choisir un emplacement") } },
             dismissButton = { TextButton(onClick = { confirmExport = false }) { Text("Annuler") } })
     }
     if (confirmErase) {
         AlertDialog(onDismissRequest = { confirmErase = false }, title = { Text("Tout effacer sur ce téléphone ?") },
-            text = { Text("Cette action est irréversible : les humeurs, notes, victoires et réglages seront supprimés. Les quatre routines de départ seront rétablies. Les fichiers déjà exportés ne seront pas effacés.") },
+            text = { Text("Cette action est irréversible : les humeurs, notes, victoires, favoris, séances, pratiques et réglages seront supprimés. Le rappel sera annulé. Les quatre routines de départ seront rétablies. Les fichiers déjà exportés ne seront pas effacés.") },
             confirmButton = { TextButton(onClick = { confirmErase = false; onErase(); onDismiss() }) { Text("Tout effacer") } },
             dismissButton = { TextButton(onClick = { confirmErase = false }) { Text("Annuler") } })
     }

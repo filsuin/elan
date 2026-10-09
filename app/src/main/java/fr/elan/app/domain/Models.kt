@@ -12,6 +12,12 @@ data class UserSettings(
     val firstName: String = "",
     val theme: ThemeMode = ThemeMode.SYSTEM,
     val dynamicColors: Boolean = true,
+    val weeklyGoalMinutes: Int = 30,
+    val soundEnabled: Boolean = false,
+    val voiceEnabled: Boolean = false,
+    val reminderEnabled: Boolean = false,
+    val reminderHour: Int = 19,
+    val reminderMinute: Int = 0,
 )
 
 data class RoutineTask(val id: String, val title: String)
@@ -48,10 +54,13 @@ data class DayEntry(
 }
 
 data class AppSnapshot(
-    val schemaVersion: Int = 1,
+    val schemaVersion: Int = 2,
     val settings: UserSettings = UserSettings(),
     val routines: List<RoutineTask> = defaultRoutines(),
     val days: Map<String, DayEntry> = emptyMap(),
+    val favoritePoseIds: Set<String> = emptySet(),
+    val customSessions: List<YogaSession> = emptyList(),
+    val practiceHistory: List<PracticeRecord> = emptyList(),
 ) {
     fun entry(date: LocalDate): DayEntry = days[date.toString()] ?: DayEntry(date.toString())
 }

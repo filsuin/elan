@@ -1,0 +1,231 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Elan 0.3.0 - Guide de deploiement</title><style>*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#f4f5ef;color:#223c34;font:16px/1.65 system-ui,-apple-system,Segoe UI,sans-serif}header{padding:42px max(24px,calc((100vw - 980px)/2));background:#233f35;color:white}header strong{font-size:30px;letter-spacing:-.7px}header p{margin:8px 0 0;color:#d9e6db}main{max-width:980px;margin:30px auto 64px;padding:34px 42px;background:white;border:1px solid #dbe4d9;border-radius:18px}nav{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;border-bottom:1px solid #dbe4d9;padding-bottom:26px;margin-bottom:28px}nav a{font-size:14px;text-decoration:none}h1{font-size:31px;line-height:1.25;margin:8px 0 20px}h2{font-size:23px;line-height:1.3;border-top:1px solid #dbe4d9;padding-top:28px;margin-top:40px;scroll-margin-top:20px}h3{font-size:18px;margin-top:24px}a{color:#276b55;overflow-wrap:anywhere}blockquote{border-left:4px solid #b38134;background:#fff7e7;padding:2px 20px;margin:24px 0;color:#4c402c}pre{background:#f1f4f0;border:1px solid #dbe4d9;border-radius:8px;padding:16px;overflow-x:auto;line-height:1.5;font-size:13px}code{font-family:ui-monospace,Consolas,monospace;font-size:.9em;overflow-wrap:anywhere}p code,td code{background:#eff3ec;border-radius:4px;padding:2px 4px}table{table-layout:fixed;overflow-wrap:anywhere;border-collapse:collapse;width:100%;font-size:14px;margin:20px 0}th{text-align:left;background:#e7efe3;font-weight:650}td,th{border:1px solid #dbe4d9;padding:11px 13px;vertical-align:top}td:first-child{width:28%;font-weight:600}tr:nth-child(even) td{background:#fafbf7}footer{text-align:center;padding:16px 24px 30px;font-size:13px;color:#516358}@media(max-width:700px){header{padding:26px 20px}main{margin:16px 10px;padding:24px 18px}nav{grid-template-columns:1fr}h1{font-size:26px}table{font-size:12px}td,th{padding:8px 7px}td:first-child{width:33%}}@media print{body{background:white;font-size:11pt}header{background:white;color:#223c34;padding:0 0 14px}header p{color:#516358}main{border:0;margin:0;padding:0;max-width:none}nav{display:none}h2{break-after:avoid}tr,pre,blockquote{break-inside:avoid}a{color:inherit;text-decoration:none}footer{display:none}}</style></head><body><header><strong>Élan / 0.3.0</strong><p>Guide de déploiement · Sources Android · 9 octobre 2026</p></header><main><nav aria-label="Sommaire"><a href="#section-1">1. Quel ZIP utiliser ?</a><a href="#section-2">2. Prérequis</a><a href="#section-3">3. Préparer le projet sur Windows</a><a href="#section-4">4. Installer sur un téléphone de test</a><a href="#section-5">5. Valider les nouveaux parcours</a><a href="#section-6">6. Créer une version de diffusion signée</a><a href="#section-7">7. Sauvegardes et retour arrière</a><a href="#section-8">8. macOS et Linux</a><a href="#section-9">9. Dépannage</a><a href="#section-10">10. Le backend du ZIP d'origine</a><a href="#section-11">Sources officielles</a></nav><h1>Élan 0.3.0 - Guide de déploiement</h1>
+<p><strong>Livraison du 9 octobre 2026 | Android | Projet Kotlin / Jetpack Compose</strong></p>
+<blockquote>
+<p>Cette livraison contient les sources et les tests, pas un APK compilé. Les 200 contrôles du domaine ont réussi. La compilation Android complète et les essais sur appareil restent à effectuer : le SDK Android et l'accès réseau nécessaire aux dépendances ne sont pas disponibles dans l'environnement utilisé pour préparer ce ZIP.</p>
+</blockquote>
+<h2 id="section-1">1. Quel ZIP utiliser ?</h2>
+<p><strong><code>elan_v0.3.0_complet.zip</code> : choix recommandé.</strong> Il contient le projet entier, modifié et documenté. Extraire dans un nouveau dossier, par exemple <code>C:\Projets</code>, pour obtenir <code>C:\Projets\elan</code>. Ne pas travailler directement dans la fenêtre de consultation du ZIP.</p>
+<p><strong><code>elan_v0.3.0_fichiers_modifies.zip</code> : mise à jour du projet source fourni.</strong> Il contient uniquement les fichiers ajoutés ou modifiés, avec leurs chemins. Sauvegarder le projet original, fermer Android Studio, puis recopier le contenu du dossier <code>elan</code> du ZIP dans le dossier <code>elan</code> existant en acceptant les remplacements. Ne pas créer accidentellement <code>elan\elan</code>. Aucune suppression de source n'est requise.</p>
+<p>Le ZIP différentiel s'applique <strong>au <code>elan.zip</code> de cette conversation</strong>. Si les mêmes fichiers ont été modifiés depuis, effectuer une fusion plutôt qu'un remplacement aveugle. Consulter <code>FICHIERS_MODIFIES.md</code> et <code>MANIFEST_MODIFICATIONS.json</code> pour les chemins et empreintes SHA-256.</p>
+<h2 id="section-2">2. Prérequis</h2>
+<table>
+<thead>
+<tr>
+  <th>Élément</th>
+  <th>Configuration de cette livraison</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Android Studio</td>
+  <td>Une version prenant en charge Android Gradle Plugin 8.13.2. Ne pas lancer une migration automatique vers AGP 9 pour ce premier essai.</td>
+</tr>
+<tr>
+  <td>JDK de Gradle</td>
+  <td>17 minimum ; 17 ou 21 pour ce guide.</td>
+</tr>
+<tr>
+  <td>Android SDK</td>
+  <td>Platform 36 et Build-Tools 35.0.0 ; Platform-Tools pour ADB.</td>
+</tr>
+<tr>
+  <td>Gradle</td>
+  <td>8.13, chargé par le wrapper du projet.</td>
+</tr>
+<tr>
+  <td>Kotlin</td>
+  <td>2.2.21, déclaré dans le catalogue de versions.</td>
+</tr>
+<tr>
+  <td>Téléphone</td>
+  <td>Configuration cible : Android 8.0 / API 26 minimum. Validation multi-version à effectuer.</td>
+</tr>
+<tr>
+  <td>Internet</td>
+  <td>Nécessaire pour préparer le wrapper et télécharger SDK/dépendances. Non requis par l'app installée pour ses fonctions locales.</td>
+</tr>
+</tbody>
+</table>
+<p>La matrice Gradle / JDK / SDK correspond à la documentation Android de la branche AGP 8.13 [1]. Les versions sont figées dans <code>gradle/libs.versions.toml</code> ; ne pas les remplacer toutes par les dernières versions avant le premier build.</p>
+<h2 id="section-3">3. Préparer le projet sur Windows</h2>
+<h3>A. Préparer le wrapper</h3>
+<p>Dans <code>C:\Projets\elan</code>, double-cliquer sur <strong><code>PREPARER_WINDOWS.cmd</code></strong>. Il télécharge le <code>gradle-wrapper.jar</code> officiel et contrôle son SHA-256. Le JAR n'est pas embarqué dans ce ZIP ; la distribution Gradle et les bibliothèques seront également téléchargées au premier build.</p>
+<p>Le script ne modifie pas les règles de sécurité PowerShell de manière permanente. Si les règles de l'entreprise bloquent un script, ne pas les désactiver globalement : faire valider l'exécution ou préparer le wrapper avec un Gradle 8.13 approuvé.</p>
+<p>Empreintes attendues, issues de Gradle [2] :</p>
+<pre><code class="language-text">Gradle 8.13, distribution binaire :
+20f1b1176237254a6fc204d8434196fa11a4cfb387567519c61556e8710aed78
+
+Gradle 8.13, wrapper JAR :
+81a82aaea5abcc8ff68b3dfcb58b3c3c429378efd98e7433460610fecd7ae45f
+</code></pre>
+<p>Ne pas ignorer un échec de vérification de somme de contrôle.</p>
+<h3>B. Ouvrir Android Studio</h3>
+<p>Dans <strong>Open</strong>, sélectionner <code>C:\Projets\elan</code>, le dossier qui contient <code>settings.gradle.kts</code>, <code>build.gradle.kts</code>, <code>gradlew.bat</code> et <code>app/</code>. Ne pas ouvrir seulement <code>app/</code> ni <code>backend/</code>.</p>
+<p>Dans <strong>SDK Manager</strong>, installer Android SDK Platform 36, Android SDK Build-Tools 35.0.0 et Android SDK Platform-Tools. Accepter les licences demandées. Dans <strong>Settings &gt; Build, Execution, Deployment &gt; Build Tools &gt; Gradle</strong>, sélectionner un JDK 17 ou 21. Les libellés peuvent varier selon Android Studio.</p>
+<p>Lancer <strong>Sync Project with Gradle Files</strong> et consulter son résultat dans l'IDE. Le projet ne fournit volontairement pas <code>local.properties</code>, qui dépend de ton ordinateur. Android Studio le crée avec le chemin local du SDK. Exemple à adapter seulement en cas de configuration manuelle :</p>
+<pre><code class="language-properties">sdk.dir=C:/Users/VOTRE_COMPTE/AppData/Local/Android/Sdk
+</code></pre>
+<h3>C. Compiler et contrôler</h3>
+<p>Ouvrir le terminal d'Android Studio à la racine du projet :</p>
+<pre><code class="language-powershell">.\gradlew.bat --version
+.\gradlew.bat :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+</code></pre>
+<p>Le premier appel doit indiquer Gradle 8.13 et le JDK retenu. Le second doit se terminer par <strong>BUILD SUCCESSFUL</strong>. Le script <code>CONSTRUIRE_APK_WINDOWS.cmd</code> lance la même suite de tests / Lint / assemblage et conserve la fenêtre ouverte.</p>
+<p>Fichiers obtenus après réussite :</p>
+<pre><code class="language-text">app\build\outputs\apk\debug\app-debug.apk
+app\build\reports\tests\testDebugUnitTest\index.html
+app\build\reports\lint-results-debug.html
+</code></pre>
+<p>En cas d'échec, conserver le message complet. Pour obtenir plus de contexte sans effacer le projet :</p>
+<pre><code class="language-powershell">.\gradlew.bat :app:testDebugUnitTest :app:lintDebug :app:assembleDebug --stacktrace
+</code></pre>
+<h2 id="section-4">4. Installer sur un téléphone de test</h2>
+<p><strong>Avant une mise à jour :</strong> ouvrir la version existante, aller dans les réglages puis <strong>Exporter ma sauvegarde JSON</strong>, et conserver le fichier hors de l'app. Ne pas désinstaller la version existante pour commencer.</p>
+<p>Activer le débogage USB sur un appareil de test, le connecter, autoriser l'ordinateur et le choisir dans Android Studio, puis cliquer sur <strong>Run</strong>. Autre possibilité, avec ADB disponible dans le PATH :</p>
+<pre><code class="language-powershell">adb devices
+adb install -r .\app\build\outputs\apk\debug\app-debug.apk
+</code></pre>
+<p><code>-r</code> demande une mise à jour avec conservation des données. Android exige notamment une signature compatible avec l'app déjà installée [3]. Cette livraison conserve <code>applicationId = fr.elan.app</code> et porte <code>versionCode</code> à 3.</p>
+<p><strong>Attention à la clé debug :</strong> deux ordinateurs peuvent signer leurs APK de développement avec des certificats différents. <code>INSTALL_FAILED_UPDATE_INCOMPATIBLE</code> peut indiquer ce problème. Réutiliser l'environnement ou la clé de signature autorisée de la version installée. Ne pas partager une clé privée dans le ZIP.</p>
+<p>Si la conservation de la signature est impossible, la désinstallation/réinstallation est une migration destructive : <strong>exporter et vérifier la sauvegarde avant</strong>, puis restaurer cette sauvegarde dans la nouvelle version. Sans sauvegarde, le journal local serait perdu.</p>
+<h2 id="section-5">5. Valider les nouveaux parcours</h2>
+<p>Les tests d'interface fournis se lancent sur un émulateur ou un téléphone de test connecté :</p>
+<pre><code class="language-powershell">.\gradlew.bat :app:connectedDebugAndroidTest
+</code></pre>
+<p>Ils ne remplacent pas la recette manuelle. Avant de diffuser l'APK, vérifier :</p>
+<table>
+<thead>
+<tr>
+  <th>Parcours</th>
+  <th>Résultat attendu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Catalogue</td>
+  <td>48 fiches ; recherche sans distinction d'accents/casse ; filtres et favoris persistants après relance.</td>
+</tr>
+<tr>
+  <td>Séance</td>
+  <td>Côtés gauche/droit, durées cohérentes, transitions réglables ; pause possible avant tout mouvement.</td>
+</tr>
+<tr>
+  <td>Éditeur</td>
+  <td>Création, copie, modification, ordre, durées, suppression et avertissement avant abandon.</td>
+</tr>
+<tr>
+  <td>Lecteur</td>
+  <td>Pause/reprise, étape sautée, fin, enregistrement unique ; aucun temps crédité pour pause/installation/transition.</td>
+</tr>
+<tr>
+  <td>Cycle de vie</td>
+  <td>Rotation puis reprise ; arrière-plan et verrouillage mettent en pause ; pas d'audio continu après sortie.</td>
+</tr>
+<tr>
+  <td>Respiration</td>
+  <td>Quatre rythmes sans rétention ; durée effective affichée quand les cycles arrondissent la durée demandée.</td>
+</tr>
+<tr>
+  <td>Suivi</td>
+  <td>Temps réel, parcours partiels, filtre 7/30/90 jours/tout, objectif de semaine, suppression d'une entrée.</td>
+</tr>
+<tr>
+  <td>Rappel</td>
+  <td>Désactivé initialement ; autorisation sur Android 13+ ; refus respecté ; changement d'heure et redémarrage.</td>
+</tr>
+<tr>
+  <td>Sauvegarde</td>
+  <td>Import v1 ; aller-retour v2 avec favoris/séances/historique ; refus des fichiers invalides sans écrasement.</td>
+</tr>
+<tr>
+  <td>Accessibilité</td>
+  <td>Petit écran, paysage, police 200 %, clair/sombre, TalkBack, clavier.</td>
+</tr>
+</tbody>
+</table>
+<p>Faire ces essais sur une version ancienne prise en charge et un Android récent. La compatibilité configurée dans Gradle n'est pas une preuve d'essai sur toutes les versions.</p>
+<h2 id="section-6">6. Créer une version de diffusion signée</h2>
+<p>L'APK debug sert aux essais. Pour une diffusion durable, utiliser <strong>Build &gt; Generate Signed Bundle / APK</strong> dans Android Studio : APK pour une installation directe, ou Android App Bundle pour le parcours de publication qui le demande [3].</p>
+<p>Choisir le module <code>app</code>, la variante <code>release</code>, puis <strong>réutiliser la clé de signature existante</strong> si l'app a déjà été distribuée. Pour une première diffusion, créer une clé et la sauvegarder dans un emplacement sécurisé, avec son mot de passe et son alias. Ne pas changer l'identifiant d'application pour mettre à jour les installations existantes.</p>
+<p>Le projet n'embarque aucune clé ni configuration de signature privée. Un simple <code>assembleRelease</code> ne garantit donc pas un APK de diffusion signé. Utiliser l'assistant et récupérer le fichier à l'emplacement qu'il indique. Tester <strong>cette variante release</strong>, qui active l'optimisation R8, puis vérifier la mise à jour d'une installation signée avec la même clé.</p>
+<p>Avant publication publique : faire relire les postures et schémas par une personne qualifiée, vérifier les licences des dépendances, produire une politique de confidentialité adaptée au fonctionnement réel et consulter les exigences en vigueur du magasin. Cette livraison n'est ni une certification médicale ni une validation Play Store.</p>
+<h2 id="section-7">7. Sauvegardes et retour arrière</h2>
+<p>Le fichier privé conserve son nom <code>elan-journal-v1.json</code> pour trouver le journal préexistant. Le <strong>contenu</strong> passe au schéma v2 à la prochaine écriture. Les nouveaux champs ont des valeurs par défaut lors de la lecture d'une sauvegarde v1.</p>
+<p>L'import valide le contenu puis demande confirmation avant de remplacer le journal. Il ne fusionne pas deux historiques. Après restauration, le rappel est désactivé : le réactiver volontairement sur ce téléphone.</p>
+<p><strong>Le format v2 n'est pas promis compatible avec la version 0.2.0.</strong> Garder l'export v1 fait avant migration et l'ancien APK/signature. Pour revenir à l'ancienne version, exporter aussi les données récentes à titre d'archive, puis préparer un retour contrôlé sur un appareil de test avec l'ancienne sauvegarde v1. Ne pas forcer une rétrogradation en place sur des données v2.</p>
+<p>La sauvegarde automatique Android est désactivée. Le JSON exporté contient des données personnelles en clair : choisir un emplacement de confiance. Un fournisseur cloud choisi dans le sélecteur Android peut le synchroniser, même si l'app n'a pas de permission Internet.</p>
+<h2 id="section-8">8. macOS et Linux</h2>
+<p>Installer/configurer le SDK et un JDK compatible, ouvrir le projet avec Android Studio puis, depuis sa racine :</p>
+<pre><code class="language-bash">sh tools/prepare-wrapper.sh
+chmod +x gradlew
+./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+</code></pre>
+<p><code>ANDROID_HOME</code> ou <code>sdk.dir</code> dans <code>local.properties</code> doit pointer vers le SDK local. Les scripts n'installent pas eux-mêmes le SDK. Pour rejouer seulement les tests métier sans Android, avec Kotlin CLI 1.9+ et JDK 17+ :</p>
+<pre><code class="language-bash">sh tools/test-domain.sh
+</code></pre>
+<h2 id="section-9">9. Dépannage</h2>
+<table>
+<thead>
+<tr>
+  <th>Message ou comportement</th>
+  <th>Vérification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>gradle-wrapper.jar</code> absent</td>
+  <td>Lancer <code>PREPARER_WINDOWS.cmd</code> avant la première synchronisation. Vérifier l'accès HTTPS au dépôt officiel.</td>
+</tr>
+<tr>
+  <td>Échec SHA-256</td>
+  <td>Ne pas contourner. Inspecter le fichier et le téléchargement ; reprendre depuis la source officielle [2].</td>
+</tr>
+<tr>
+  <td><code>SDK location not found</code></td>
+  <td>Ouvrir le SDK Manager puis vérifier <code>local.properties</code> ou <code>ANDROID_HOME</code>.</td>
+</tr>
+<tr>
+  <td>Erreur JDK / version de classe</td>
+  <td>Vérifier le JDK dans Android Studio <strong>et</strong> dans <code>gradlew --version</code>.</td>
+</tr>
+<tr>
+  <td>Dépendance introuvable, proxy ou DNS</td>
+  <td>Vérifier les dépôts Google, Maven Central et Gradle. Ne pas ajouter de dépôt inconnu pour contourner.</td>
+</tr>
+<tr>
+  <td>Incompatibilité de signature</td>
+  <td>Réutiliser la clé précédente ; sauvegarder avant toute désinstallation.</td>
+</tr>
+<tr>
+  <td>Pas de voix</td>
+  <td>Installer/choisir une voix française hors ligne dans le moteur Android, puis relancer l'app. Le guidage visuel reste disponible [5].</td>
+</tr>
+<tr>
+  <td>Pas de rappel</td>
+  <td>Vérifier l'interrupteur, les permissions et le canal de notification ; rouvrir après un arrêt forcé. Horaire approximatif [4, 6].</td>
+</tr>
+<tr>
+  <td>Le suivi n'a pas augmenté</td>
+  <td>Appuyer sur <strong>Enregistrer dans mon suivi</strong> ou <strong>Enregistrer et quitter</strong>. Au moins une seconde de pratique effective est nécessaire.</td>
+</tr>
+<tr>
+  <td>Perte d'une pratique non enregistrée</td>
+  <td>Un arrêt du processus ne conserve pas le lecteur/brouillon. Le journal déjà enregistré reste distinct.</td>
+</tr>
+<tr>
+  <td>Journal illisible</td>
+  <td>Ne pas effacer les données. Vérifier l'espace libre et conserver les exports ; aucune réinitialisation silencieuse.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="section-10">10. Le backend du ZIP d'origine</h2>
+<p><strong>Aucun serveur à déployer pour cette version Android.</strong> Les fonctions sont locales. Le projet Ktor/PostgreSQL de <code>backend/</code> est conservé mais n'est pas branché au client ; le démarrer n'ajoute ni synchronisation ni compte à l'app. Sa documentation séparée précise ce périmètre.</p>
+<h2 id="section-11">Sources officielles</h2>
+<p>[1] Android Developers, compatibilité AGP 8.13 : <a href="https://developer.android.com/build/releases/agp-8-13-0-release-notes">https://developer.android.com/build/releases/agp-8-13-0-release-notes</a></p>
+<p>[2] Gradle, sommes SHA-256 : <a href="https://gradle.org/release-checksums/">https://gradle.org/release-checksums/</a></p>
+<p>[3] Android Developers, signature et mises à jour : <a href="https://developer.android.com/studio/publish/app-signing">https://developer.android.com/studio/publish/app-signing</a></p>
+<p>[4] Android Developers, alarmes inexactes : <a href="https://developer.android.com/develop/background-work/services/alarms">https://developer.android.com/develop/background-work/services/alarms</a></p>
+<p>[5] Android Developers, voix et besoin de connexion : <a href="https://developer.android.com/reference/android/speech/tts/Voice">https://developer.android.com/reference/android/speech/tts/Voice</a></p>
+<p>[6] Android Developers, autorisation de notification Android 13+ : <a href="https://developer.android.com/develop/ui/compose/notifications/notification-permission">https://developer.android.com/develop/ui/compose/notifications/notification-permission</a></p>
+<p>Consultées pour cette livraison le 9 octobre 2026. Les comportements propres à Élan décrivent le code livré, pas des essais sur appareil qui n'ont pas eu lieu.</p>
+</main><footer>Document autonome, sans ressource externe ni outil de suivi. Les liens de référence ouvrent des sites tiers.</footer></body></html>

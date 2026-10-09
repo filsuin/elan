@@ -65,7 +65,7 @@ fun main() {
     test("negative epoch still valid") { DailyContent.index(LocalDate.of(1960, 1, 1), 14) in 0..13 }
     test("leap day works") { DailyContent.tip(LocalDate.of(2028, 2, 29)).title.isNotBlank() }
     test("all yoga identifiers unique") { YogaCatalog.poses.map { it.id }.distinct().size == YogaCatalog.poses.size }
-    test("six yoga guides") { YogaCatalog.poses.size == 6 }
+    test("48 yoga guides") { YogaCatalog.poses.size == 48 }
     test("all yoga guides have precautions and four steps") { YogaCatalog.poses.all { it.steps.size == 4 && it.caution.isNotBlank() && it.seconds > 0 } }
     var timer = Countdown(60_000).start(1000)
     test("timer starts") { timer.running && timer.deadlineMillis == 61_000L }
@@ -84,5 +84,6 @@ fun main() {
     timer = timer.reset()
     test("reset restores full duration") { timer.remainingMillis == 60_000L && !timer.running }
     test("zero duration rejected") { rejected { Countdown(0) } }
+    checks += runExtendedChecks()
     println("\n$checks checks passed.")
 }

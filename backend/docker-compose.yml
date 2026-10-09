@@ -5,6 +5,13 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      APP_UPDATE_VERSION_CODE: ${APP_UPDATE_VERSION_CODE:-4}
+      APP_UPDATE_VERSION_NAME: ${APP_UPDATE_VERSION_NAME:-0.3.1}
+      APP_UPDATE_PUBLIC_BASE_URL: ${APP_UPDATE_PUBLIC_BASE_URL:-https://elan.maxremonnay.fr}
+      APP_UPDATE_APK_PATH: /app/updates/elan.apk
+    volumes:
+      - ./updates:/app/updates:ro
     depends_on:
       elan-db:
         condition: service_healthy
@@ -20,10 +27,6 @@ services:
     restart: unless-stopped
     env_file:
       - .env
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - elan-postgres:/var/lib/postgresql/data
       - ./src/main/resources/db/migration/V1__create_daily_ideas.sql:/docker-entrypoint-initdb.d/V1__create_daily_ideas.sql:ro
@@ -43,3 +46,4 @@ networks:
     internal: true
   proxy:
     external: true
+    name: proxy_shared

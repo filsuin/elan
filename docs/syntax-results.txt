@@ -1,0 +1,2 @@
+Parsed 41 Kotlin/KTS files; 0 syntax errors. Syntax only, not Android type checking.
+

@@ -23,6 +23,7 @@ fun HomeScreen(
     onToggle: (String) -> Unit,
     onSaveRoutine: (String?, String) -> Unit, onDeleteRoutine: (String) -> Unit,
     onVictory: (String) -> Unit, onMood: () -> Unit, onYoga: () -> Unit,
+    onBreathing: () -> Unit = {}, onProgress: () -> Unit = {},
 ) {
     val entry = snapshot.entry(today)
     val completed = snapshot.routines.count { it.id in entry.completedTaskIds }
@@ -46,6 +47,19 @@ fun HomeScreen(
                 Text(tip.title, style = MaterialTheme.typography.headlineMedium)
                 Text(tip.text, style = MaterialTheme.typography.bodyLarge)
                 Text("Une invitation, pas une obligation.", style = MaterialTheme.typography.labelMedium)
+            }
+        }
+        item {
+            ElanCard {
+                SectionTitle("Mon rythme cette semaine")
+                val seconds = PracticeAnalytics.weekSeconds(snapshot, today)
+                Text("${formatDuration(seconds)} / ${snapshot.settings.weeklyGoalMinutes} min", style = MaterialTheme.typography.headlineMedium)
+                LinearProgressIndicator(progress = { (seconds.toFloat() / (snapshot.settings.weeklyGoalMinutes * 60)).coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilledTonalButton(onClick = onBreathing) { Text("Respirer un instant") }
+                    TextButton(onClick = onProgress) { Text("Voir mon suivi") }
+                }
+                Text("Un objectif ajustable, sans obligation. Seules les pratiques enregistrées sont comptées.", style = MaterialTheme.typography.bodySmall)
             }
         }
         item {

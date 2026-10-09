@@ -31,7 +31,9 @@ object SnapshotSerializer : Serializer<AppSnapshot> {
         }
     }
     override suspend fun writeTo(t: AppSnapshot, output: OutputStream) {
-        output.write(SnapshotJson.encode(t).toByteArray(Charsets.UTF_8))
+        val bytes = SnapshotJson.encode(t).toByteArray(Charsets.UTF_8)
+        require(bytes.size <= SnapshotJson.MAX_IMPORT_BYTES) { "Journal plein (10 Mo). Exporte puis supprime des entrees." }
+        output.write(bytes)
     }
 }
 

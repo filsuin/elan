@@ -6,5 +6,5 @@ OUT=$(mktemp -d)
 trap 'rm -rf "$OUT"' EXIT HUP INT TERM
 kotlinc "$ROOT"/app/src/main/java/fr/elan/app/domain/*.kt \
     "$ROOT"/app/src/main/java/fr/elan/app/content/*.kt \
-    "$ROOT/tools/DomainSmokeTest.kt" -include-runtime -d "$OUT/domain-tests.jar"
+    "$ROOT/tools/DomainSmokeTest.kt" "$ROOT/tools/ExtendedDomainChecks.kt" -include-runtime -d "$OUT/domain-tests.jar"
 java -jar "$OUT/domain-tests.jar"

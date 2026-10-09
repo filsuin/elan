@@ -22,7 +22,7 @@ try {
     $actual = (Get-FileHash -LiteralPath $temp -Algorithm SHA256).Hash.ToLowerInvariant()
     if ($actual -ne $expected) { throw 'Gradle wrapper checksum verification failed. Nothing was installed.' }
     Move-Item -LiteralPath $temp -Destination $destination -Force
-    Write-Host 'Ready. Open the ElanAndroid folder in Android Studio.'
+    Write-Host 'Ready. Open the elan folder in Android Studio.'
 } finally {
     if (Test-Path -LiteralPath $temp) { Remove-Item -LiteralPath $temp -Force }
 }

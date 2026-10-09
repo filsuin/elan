@@ -8,11 +8,22 @@ data class YogaPose(
     val equipment: String,
     val steps: List<String>,
     val caution: String,
+    val sanskrit: String = "Variante douce",
+    val level: YogaLevel = YogaLevel.GENTLE,
+    val category: YogaCategory = YogaCategory.REST,
+    val focus: List<String> = listOf("Repos"),
+    val bilateral: Boolean = false,
+    val adaptation: String = "Raccourcis la durée ou choisis une assise soutenue.",
 )
+
+enum class YogaLevel(val label: String) { GENTLE("Doux"), BEGINNER("Débutant"), INTERMEDIATE("Intermédiaire") }
+enum class YogaCategory(val label: String) {
+    STANDING("Debout"), SEATED("Assis"), FLOOR("Au sol"), BALANCE("Équilibre"), REST("Repos"), MOBILITY("Mobilité")
+}
 
 object YogaCatalog {
     const val safety = "Reste dans une amplitude confortable et respire naturellement, sans retenir ton souffle. Arrête en cas de douleur, vertige ou gêne. En cas de blessure, de problème de santé ou de grossesse, demande un avis adapté avant de pratiquer. Ces repères ne remplacent pas un cours avec une personne qualifiée."
-    val poses = listOf(
+    private val original = listOf(
         YogaPose("seated", "Assise confortable", "S'installer, sans effort", 90, "Une chaise stable, sans roulettes", listOf(
             "Assieds-toi sur une chaise stable, les pieds soutenus par le sol ou un support.",
             "Appuie ton dos contre le dossier si cela est plus confortable. Pose les mains sur les cuisses.",
@@ -50,5 +61,28 @@ object YogaCatalog {
             "Laisse la respiration naturelle. Pour te relever, prends appui sur les bras et marque une pause assise."
         ), "Ajuste les supports si une épaule, une hanche ou le cou devient inconfortable. La durée proposée reste facultative."),
     )
-    fun find(id: String): YogaPose? = poses.firstOrNull { it.id == id }
+    val poses: List<YogaPose> = original.map { pose ->
+        when (pose.id) {
+            "seated" -> pose.copy(category = YogaCategory.SEATED, focus = listOf("Posture", "Repos"))
+            "cat" -> pose.copy(category = YogaCategory.MOBILITY, focus = listOf("Dos"), sanskrit = "Marjaryasana / Bitilasana")
+            "child" -> pose.copy(sanskrit = "Balasana avec support", focus = listOf("Repos", "Dos"))
+            else -> pose
+        }
+    } + ExtendedYoga.poses
+    private val byId = poses.associateBy { it.id }
+    fun find(id: String): YogaPose? = byId[id]
+
+    fun search(query: String, level: YogaLevel? = null, category: YogaCategory? = null,
+        favorites: Set<String>? = null): List<YogaPose> {
+        val terms = normalize(query).split(" ").filter { it.isNotBlank() }
+        return poses.filter { pose ->
+            (level == null || pose.level == level) && (category == null || pose.category == category) &&
+                (favorites == null || pose.id in favorites) && terms.all { term ->
+                term in normalize("${pose.title} ${pose.sanskrit} ${pose.focus.joinToString(" ")} ${pose.equipment}")
+            }
+        }
+    }
+    fun normalize(text: String): String = java.text.Normalizer.normalize(text, java.text.Normalizer.Form.NFD)
+        .replace(Regex("\\p{M}+"), "").lowercase(java.util.Locale.FRENCH).trim()
+
 }

@@ -7,6 +7,9 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import fr.elan.app.ElanApplication
 import fr.elan.app.content.YogaCatalog
+import fr.elan.app.content.PracticeCatalog
+import fr.elan.app.platform.PracticeAudio
+import fr.elan.app.platform.ReminderScheduler
 import fr.elan.app.data.SnapshotJson
 import fr.elan.app.domain.*
 import java.io.ByteArrayOutputStream
@@ -39,19 +42,49 @@ class ElanViewModel(application: Application) : AndroidViewModel(application) {
     private val _timer = MutableStateFlow(Countdown(60_000))
     val timer = _timer.asStateFlow()
 
+    private val audio = PracticeAudio(application)
+    val voiceAvailable = audio.voiceAvailable
+    private val _practice = MutableStateFlow<PracticePlayer?>(null)
+    val practice = _practice.asStateFlow()
+    private val _draft = MutableStateFlow<YogaSession?>(null)
+    val draft = _draft.asStateFlow()
+    private val _practiceSaving = MutableStateFlow(false)
+    val practiceSaving = _practiceSaving.asStateFlow()
+    private val _draftSaving = MutableStateFlow(false)
+    val draftSaving = _draftSaving.asStateFlow()
+    private var practiceJob: Job? = null
+
     init {
         reload()
+        viewModelScope.launch {
+            try {
+                var restoreAlarm = true
+                repository.data.map { Triple(it.settings.reminderEnabled, it.settings.reminderHour, it.settings.reminderMinute) }
+                    .distinctUntilChanged().collect { (enabled, hour, minute) ->
+                        runCatching { ReminderScheduler.schedule(application, UserSettings(reminderEnabled = enabled, reminderHour = hour, reminderMinute = minute), restore = restoreAlarm) }
+                        restoreAlarm = false
+                    }
+            } catch (cancel: CancellationException) { throw cancel }
+            catch (_: Exception) { /* Reading errors are already surfaced by reload(). */ }
+        }
         viewModelScope.launch {
             while (isActive) { delay(30_000); refreshDay() }
         }
     }
 
-    fun refreshDay() { _today.value = LocalDate.now() }
+    fun refreshDay() {
+        _today.value = LocalDate.now()
+        _snapshot.value?.settings?.let { settings ->
+            runCatching { ReminderScheduler.schedule(getApplication(), settings) }
+        }
+    }
     fun reload() {
         loadJob?.cancel()
         _loadError.value = null
         loadJob = viewModelScope.launch {
-            try { repository.data.collect { _snapshot.value = it; _loadError.value = null } }
+            try { repository.data.collect {
+                _snapshot.value = it; _loadError.value = null
+            } }
             catch (cancel: CancellationException) { throw cancel }
             catch (_: Exception) {
                 _loadError.value = "Impossible de lire le journal local. Aucune donnée n'a été réinitialisée. Vérifie l'espace libre puis réessaie."
@@ -118,9 +151,12 @@ class ElanViewModel(application: Application) : AndroidViewModel(application) {
     }
     fun updateSettings(settings: UserSettings) = perform {
         require(settings.firstName.length <= 30)
+        require(settings.weeklyGoalMinutes in 5..300 && settings.reminderHour in 0..23 && settings.reminderMinute in 0..59)
         repository.update { it.copy(settings = settings.copy(firstName = settings.firstName.trim())) }
     }
     fun eraseAll() = perform("Données locales effacées") {
+        require(!_practiceSaving.value && !_draftSaving.value) { "Attends la fin de l'enregistrement" }
+        discardPractice(); _draft.value = null
         repository.replace(AppSnapshot())
         _dataGeneration.update { it + 1 }
         pauseTimer()
@@ -163,7 +199,10 @@ class ElanViewModel(application: Application) : AndroidViewModel(application) {
         val imported = _pendingImport.value ?: return
         _pendingImport.value = null
         perform("Sauvegarde restaurée") {
-            repository.replace(imported)
+            require(!_practiceSaving.value && !_draftSaving.value) { "Attends la fin de l'enregistrement" }
+            discardPractice(); _draft.value = null
+            // A backup must not silently opt this device into notifications.
+            repository.replace(imported.copy(settings = imported.settings.copy(reminderEnabled = false)))
             _dataGeneration.update { it + 1 }
         }
     }
@@ -190,4 +229,103 @@ class ElanViewModel(application: Application) : AndroidViewModel(application) {
         _timer.update { it.pause(SystemClock.elapsedRealtime()) }
     }
     fun resetTimer() { pauseTimer(); _timer.update { it.reset() } }
+
+    fun toggleFavorite(id: String) = perform { repository.update { PracticeActions.toggleFavorite(it, id) } }
+    fun deleteSession(id: String) = perform("Séance supprimée") { repository.update { PracticeActions.deleteSession(it, id) } }
+    fun deletePractice(id: String) = perform("Pratique supprimée") { repository.update { PracticeActions.deleteRecord(it, id) } }
+    fun setWeeklyGoal(minutes: Int) = perform {
+        require(minutes in 5..300)
+        repository.update { it.copy(settings = it.settings.copy(weeklyGoalMinutes = minutes)) }
+    }
+    fun setReminder(enabled: Boolean, hour: Int? = null, minute: Int? = null) = perform {
+        require(hour == null || hour in 0..23)
+        require(minute == null || minute in 0..59)
+        require(!enabled || ReminderScheduler.allowed(getApplication())) { "Autorise les notifications dans les réglages Android avant d'activer le rappel." }
+        repository.update { s -> s.copy(settings = s.settings.copy(reminderEnabled = enabled,
+            reminderHour = hour ?: s.settings.reminderHour, reminderMinute = minute ?: s.settings.reminderMinute)) }
+    }
+    fun notifyPermissionDenied() = perform { messages.send("Notifications non autorisées. Le rappel reste désactivé.") }
+
+    fun beginEditing(session: YogaSession? = null, copy: Boolean = false) {
+        if (_draftSaving.value) return
+        if ((session == null || copy) && (_snapshot.value?.customSessions?.size ?: 0) >= MAX_CUSTOM_SESSIONS) {
+            perform { messages.send("30 séances personnelles au maximum. Supprime une séance avant d'en créer une autre.") }
+            return
+        }
+        _draft.value = if (session == null) YogaSession("custom-${UUID.randomUUID()}", "", "", emptyList())
+        else if (copy) session.copy(id = "custom-${UUID.randomUUID()}", title = "${session.title} (copie)".take(80)) else session
+    }
+    fun changeDraft(session: YogaSession) { if (!_draftSaving.value) _draft.value = session }
+    fun discardDraft() { if (!_draftSaving.value) _draft.value = null }
+    fun saveDraft() {
+        if (_draftSaving.value) return
+        val session = _draft.value ?: return
+        _draftSaving.value = true
+        perform("Séance enregistrée") {
+            try { repository.update { PracticeActions.saveSession(it, session) }; _draft.value = null }
+            finally { _draftSaving.value = false }
+        }
+    }
+    fun launchPractice(plan: PracticePlan) {
+        // UI asks before leaving an active session; never overwrite an unsaved practice.
+        if (_practice.value != null) return
+        pauseTimer()
+        _practice.value = PracticePlayer(plan, UUID.randomUUID().toString(), LocalDate.now().toString())
+    }
+    fun launchPose(id: String, seconds: Int) {
+        val pose = YogaCatalog.find(id) ?: return
+        launchPractice(PracticeCatalog.yogaPlan(YogaSession("single-$id", pose.title, "", PracticeCatalog.stepsFor(id, seconds))))
+    }
+    fun playPractice() {
+        if (_practiceSaving.value) return
+        val current = _practice.value ?: return
+        if (current.running || current.finished) return
+        _practice.value = current.start(SystemClock.elapsedRealtime())
+        audio.cue(_practice.value!!, _snapshot.value?.settings ?: UserSettings())
+        practiceJob?.cancel()
+        practiceJob = viewModelScope.launch {
+            while (isActive && _practice.value?.running == true) {
+                delay(100)
+                val before = _practice.value ?: break
+                val after = before.tick(SystemClock.elapsedRealtime())
+                _practice.value = after
+                if (before.index != after.index || (!before.finished && after.finished))
+                    audio.cue(after, _snapshot.value?.settings ?: UserSettings())
+            }
+        }
+    }
+    fun pausePractice() {
+        practiceJob?.cancel(); practiceJob = null; audio.stop()
+        _practice.update { it?.pause(SystemClock.elapsedRealtime()) }
+    }
+    fun skipPractice() {
+        if (_practiceSaving.value) return
+        _practice.update { it?.skip(SystemClock.elapsedRealtime()) }
+        _practice.value?.let { if (it.running || it.finished) audio.cue(it, _snapshot.value?.settings ?: UserSettings()) }
+    }
+    fun restartPractice() {
+        if (_practiceSaving.value) return
+        pausePractice(); _practice.update { it?.restart() }
+    }
+    fun discardPractice() {
+        if (_practiceSaving.value) return
+        pausePractice(); _practice.value = null
+    }
+    fun savePractice() {
+        if (_practiceSaving.value) return
+        pausePractice()
+        val player = _practice.value ?: return
+        val record = player.record(System.currentTimeMillis()) ?: run {
+            perform { messages.send("Aucune seconde de pratique à enregistrer.") }; return
+        }
+        _practiceSaving.value = true
+        perform("Pratique enregistrée dans ton suivi") {
+            try {
+                repository.update { PracticeActions.saveRecord(it, record) }
+                _practice.value = null
+            } finally { _practiceSaving.value = false }
+        }
+    }
+    fun pauseAll() { pauseTimer(); pausePractice() }
+    override fun onCleared() { audio.close(); super.onCleared() }
 }

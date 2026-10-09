@@ -31,7 +31,8 @@ class UiSmokeTest {
     }
     @Test fun yogaCatalogShowsFirstPose() {
         compose.setContent { ElanTheme(UserSettings(dynamicColors = false)) { Surface { YogaScreen {} } } }
-        compose.onNodeWithText("Assise confortable").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("yoga_list").performScrollToNode(hasText("Assise confortable"))
+        compose.onNodeWithText("Assise confortable").assertIsDisplayed()
     }
     @Test fun historicalVictoryCanBeEdited() {
         val past = today.minusDays(1)
@@ -57,5 +58,21 @@ class UiSmokeTest {
         }
         compose.onNodeWithText("Ajouter un geste").performScrollTo().performClick()
         compose.onNodeWithText("Un nouveau petit geste").assertIsDisplayed()
+    }
+
+    @Test fun yogaSearchFindsSanskritName() {
+        compose.setContent { ElanTheme(UserSettings(dynamicColors = false)) { Surface { YogaScreen {} } } }
+        compose.onNodeWithTag("yoga_search").performTextInput("vrksasana")
+        closeSoftKeyboard()
+        compose.onNodeWithTag("yoga_list").performScrollToNode(hasText("Arbre avec appui"))
+        compose.onNodeWithText("Arbre avec appui").assertIsDisplayed()
+    }
+    @Test fun favoritesFilterUsesPersistedSelection() {
+        val snapshot = AppSnapshot(favoritePoseIds = setOf("mountain"))
+        compose.setContent { ElanTheme(UserSettings(dynamicColors = false)) { Surface { YogaScreen(snapshot = snapshot) {} } } }
+        compose.onNodeWithText("Favoris (1)").performScrollTo().performClick()
+        compose.onNodeWithText("1 fiche(s)").assertExists()
+        compose.onNodeWithTag("yoga_list").performScrollToNode(hasText("Montagne"))
+        compose.onNodeWithText("Montagne").assertIsDisplayed()
     }
 }

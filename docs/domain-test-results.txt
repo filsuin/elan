@@ -37,7 +37,7 @@ PASS: daily tip rotates
 PASS: negative epoch still valid
 PASS: leap day works
 PASS: all yoga identifiers unique
-PASS: six yoga guides
+PASS: 48 yoga guides
 PASS: all yoga guides have precautions and four steps
 PASS: timer starts
 PASS: seconds round up
@@ -49,5 +49,155 @@ PASS: timer reaches zero without going negative
 PASS: finished timer requires reset
 PASS: reset restores full duration
 PASS: zero duration rejected
+PASS: v2 is the current schema
+PASS: notifications and audio start opt-out
+PASS: 48 distinct stable catalog ids
+PASS: original six ids preserved
+PASS: all poses have explicit drawings
+PASS: drawings are individually defined
+PASS: drawing coordinates in canvas
+PASS: every new pose has instructions and alternatives
+PASS: all three levels populated
+PASS: all six categories populated
+PASS: accent insensitive search
+PASS: Sanskrit search
+PASS: multiword search includes equipment
+PASS: level filter excludes other levels
+PASS: category filter excludes other categories
+PASS: empty favorite filter really empty
+PASS: unknown query has no results
+PASS: blank search preserves catalog order
+PASS: favorite added
+PASS: favorite removed without side effects
+PASS: unknown favorite rejected
+PASS: ten curated sessions
+PASS: curated ids unique
+PASS: morning: all references valid
+PASS: morning: duration includes transition and prep exactly
+PASS: morning: practice duration excludes preparation
+PASS: morning: bilateral sides balanced
+PASS: desk: all references valid
+PASS: desk: duration includes transition and prep exactly
+PASS: desk: practice duration excludes preparation
+PASS: desk: bilateral sides balanced
+PASS: evening: all references valid
+PASS: evening: duration includes transition and prep exactly
+PASS: evening: practice duration excludes preparation
+PASS: evening: bilateral sides balanced
+PASS: discover: all references valid
+PASS: discover: duration includes transition and prep exactly
+PASS: discover: practice duration excludes preparation
+PASS: discover: bilateral sides balanced
+PASS: standing: all references valid
+PASS: standing: duration includes transition and prep exactly
+PASS: standing: practice duration excludes preparation
+PASS: standing: bilateral sides balanced
+PASS: balance: all references valid
+PASS: balance: duration includes transition and prep exactly
+PASS: balance: practice duration excludes preparation
+PASS: balance: bilateral sides balanced
+PASS: ground: all references valid
+PASS: ground: duration includes transition and prep exactly
+PASS: ground: practice duration excludes preparation
+PASS: ground: bilateral sides balanced
+PASS: shoulders: all references valid
+PASS: shoulders: duration includes transition and prep exactly
+PASS: shoulders: practice duration excludes preparation
+PASS: shoulders: bilateral sides balanced
+PASS: flow: all references valid
+PASS: flow: duration includes transition and prep exactly
+PASS: flow: practice duration excludes preparation
+PASS: flow: bilateral sides balanced
+PASS: restful: all references valid
+PASS: restful: duration includes transition and prep exactly
+PASS: restful: practice duration excludes preparation
+PASS: restful: bilateral sides balanced
+PASS: bilateral expansion has left then right
+PASS: per-side duration retained
+PASS: unilateral expansion remains one step
+PASS: custom title trimmed
+PASS: custom note trimmed
+PASS: custom upsert not duplicated
+PASS: custom delete does not affect catalog
+PASS: custom empty name refused
+PASS: custom empty steps refused
+PASS: custom 41 steps refused
+PASS: unknown custom pose refused
+PASS: bilateral unspecified side refused
+PASS: unilateral labelled side refused
+PASS: curated id cannot overwrite custom
+PASS: zero duration refused
+PASS: overlong duration refused
+PASS: 31st custom session refused
+PASS: editing at session limit allowed
+PASS: shortest scaled hold bounded to 15s
+PASS: longest scaled hold bounded to 300s
+PASS: invalid scale refused
+PASS: zero transition refused
+PASS: four breathing patterns
+PASS: gentle 1m: full cycles without apnea
+PASS: gentle 3m: full cycles without apnea
+PASS: gentle 5m: full cycles without apnea
+PASS: gentle 10m: full cycles without apnea
+PASS: equal 1m: full cycles without apnea
+PASS: equal 3m: full cycles without apnea
+PASS: equal 5m: full cycles without apnea
+PASS: equal 10m: full cycles without apnea
+PASS: long_exhale 1m: full cycles without apnea
+PASS: long_exhale 3m: full cycles without apnea
+PASS: long_exhale 5m: full cycles without apnea
+PASS: long_exhale 10m: full cycles without apnea
+PASS: slow 1m: full cycles without apnea
+PASS: slow 3m: full cycles without apnea
+PASS: slow 5m: full cycles without apnea
+PASS: slow 10m: full cycles without apnea
+PASS: meditation uses actual requested duration
+PASS: invalid meditation duration refused
+PASS: player starts paused
+PASS: start idempotent
+PASS: backwards time ignored
+PASS: late tick crosses boundary exactly
+PASS: pause credits elapsed work
+PASS: paused tick does nothing
+PASS: resume crosses pose and transition
+PASS: finish does not overcredit delayed tick
+PASS: completed player needs restart
+PASS: restart clears accounting
+PASS: completed record exact seconds
+PASS: empty practice not recorded
+PASS: skip never awards skipped seconds
+PASS: skip makes final record incomplete
+PASS: skipping preparation does not mark work skipped
+PASS: skip while paused stays paused
+PASS: skip everything creates no false practice
+PASS: partial record rounded down to second
+PASS: record keeps starting local date
+PASS: record persisted
+PASS: retry cannot duplicate record
+PASS: delete record preserves settings
+PASS: zero work record refused
+PASS: actual over plan refused
+PASS: invalid calendar date refused
+PASS: history excludes future dates
+PASS: seven day boundary inclusive
+PASS: kind filter works
+PASS: stats count active dates not rows
+PASS: stats distinguish partial
+PASS: stats sum actual time
+PASS: week starts Monday
+PASS: week excludes past weekend
+PASS: consecutive today and yesterday
+PASS: yesterday extends current streak
+PASS: streak ends across a gap
+PASS: empty stats
+PASS: invalid history window rejected
+PASS: reminder later today
+PASS: reminder earlier time next day
+PASS: reminder equal time next day
+PASS: reminder keeps local hour across DST
+PASS: nonexistent spring time shifted forward
+PASS: invalid reminder hour refused
+PASS: duration formatting
+Extended checks: 149
 
-51 checks passed.
+200 checks passed.

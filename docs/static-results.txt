@@ -1,0 +1,8 @@
+Structured files and shell syntax OK: {'xml': 10, 'toml': 1, 'json': 1, 'sh': 3}
+Gradle aliases resolve to catalog: 27
+Manifest permissions: android.permission.POST_NOTIFICATIONS, android.permission.RECEIVE_BOOT_COMPLETED
+No network or storage permission declared.
+Android automatic backup disabled; same applicationId fr.elan.app.
+Manifest resource references exist.
+Android SDK environment: [('ANDROID_HOME', None), ('ANDROID_SDK_ROOT', None)]
+

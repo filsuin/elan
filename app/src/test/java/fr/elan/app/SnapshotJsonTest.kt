@@ -47,4 +47,40 @@ class SnapshotJsonTest {
         obj.getJSONObject("settings").put("firstName", "x".repeat(31))
         SnapshotJson.decode(obj.toString())
     }
+
+    @Test fun legacyV1GetsDefaultsWithoutLosingJournal() {
+        val original = JournalActions.saveVictory(AppSnapshot(), LocalDate.of(2026, 10, 2), "Conservé")
+        val old = JSONObject(SnapshotJson.encode(original)).put("schemaVersion", 1)
+        old.remove("favoritePoseIds"); old.remove("customSessions"); old.remove("practiceHistory")
+        val migrated = SnapshotJson.decode(old.toString())
+        assertEquals(2, migrated.schemaVersion)
+        assertEquals(original.days, migrated.days)
+        assertFalse(migrated.settings.reminderEnabled)
+        assertTrue(migrated.practiceHistory.isEmpty())
+    }
+    @Test fun v2RoundTripIncludesAllNewData() {
+        var s = AppSnapshot(settings = UserSettings(weeklyGoalMinutes = 45, soundEnabled = true,
+            voiceEnabled = true, reminderEnabled = true, reminderHour = 8, reminderMinute = 15))
+        s = PracticeActions.toggleFavorite(s, "tree_supported")
+        s = PracticeActions.saveSession(s, YogaSession("custom-test", "Mon parcours", "Note",
+            fr.elan.app.content.PracticeCatalog.stepsFor("tree_supported", 45)))
+        s = PracticeActions.saveRecord(s, PracticeRecord("r", "2026-10-09", 1, PracticeKind.BREATHING, "Pause", 60, 60, true))
+        assertEquals(s, SnapshotJson.decode(SnapshotJson.encode(s)))
+    }
+    @Test(expected = IllegalArgumentException::class) fun decimalTimeIsRejectedInsteadOfTruncated() {
+        val obj = JSONObject(SnapshotJson.encode(AppSnapshot()))
+        obj.getJSONObject("settings").put("reminderHour", 8.5)
+        SnapshotJson.decode(obj.toString())
+    }
+    @Test(expected = IllegalArgumentException::class) fun unknownFavoriteRejected() {
+        val obj = JSONObject(SnapshotJson.encode(AppSnapshot())).put("favoritePoseIds", org.json.JSONArray(listOf("missing")))
+        SnapshotJson.decode(obj.toString())
+    }
+    @Test(expected = IllegalArgumentException::class) fun incompleteV2Rejected() {
+        val obj = JSONObject(SnapshotJson.encode(AppSnapshot())); obj.remove("practiceHistory")
+        try { SnapshotJson.decode(obj.toString()) } catch (e: org.json.JSONException) { throw IllegalArgumentException(e) }
+    }
+    @Test(expected = IllegalArgumentException::class) fun trailingPayloadRejected() {
+        SnapshotJson.decode(SnapshotJson.encode(AppSnapshot()) + " {}")
+    }
 }

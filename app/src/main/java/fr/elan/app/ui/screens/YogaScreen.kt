@@ -8,118 +8,206 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.semantics.*
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import fr.elan.app.content.YogaCatalog
-import fr.elan.app.content.YogaPose
-import fr.elan.app.domain.Countdown
+import fr.elan.app.content.*
+import fr.elan.app.domain.*
 import fr.elan.app.ui.components.*
-import java.util.Locale
 
 @Composable
-fun YogaScreen(onPose: (String) -> Unit) {
-    LazyColumn(contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+fun YogaScreen(
+    snapshot: AppSnapshot = AppSnapshot(),
+    onFavorite: (String) -> Unit = {}, onSession: (String) -> Unit = {}, onCreate: () -> Unit = {},
+    onEdit: (String) -> Unit = {}, onDelete: (String) -> Unit = {},
+    onPose: (String) -> Unit,
+) {
+    var page by rememberSaveable { mutableStateOf(0) }
+    var query by rememberSaveable { mutableStateOf("") }
+    var level by rememberSaveable { mutableStateOf<String?>(null) }
+    var category by rememberSaveable { mutableStateOf<String?>(null) }
+    var onlyFavorites by rememberSaveable { mutableStateOf(false) }
+    var filtersExpanded by rememberSaveable { mutableStateOf(false) }
+    var deleting by rememberSaveable { mutableStateOf<String?>(null) }
+    val poses = remember(query, level, category, onlyFavorites, snapshot.favoritePoseIds) {
+        YogaCatalog.search(query, level?.let(YogaLevel::valueOf), category?.let(YogaCategory::valueOf),
+            if (onlyFavorites) snapshot.favoritePoseIds else null)
+    }
+    LazyColumn(Modifier.testTag("yoga_list"), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Une pause pour toi.", style = MaterialTheme.typography.headlineLarge)
-                Text("Yoga doux et positions de repos, sans objectif de performance.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
+            Text("Bouger à ton rythme.", style = MaterialTheme.typography.headlineLarge)
+            Text("48 fiches · 10 parcours · tes séances", color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         item {
-            ElanCard(color = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer) {
-                Eyebrow(Icons.Outlined.Spa, "Avant de commencer")
-                Text(YogaCatalog.safety, style = MaterialTheme.typography.bodyMedium)
-            }
-        }
-        items(YogaCatalog.poses, key = { it.id }) { pose ->
-            Card(onClick = { onPose(pose.id) }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(28.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
-                Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    PoseIllustration(pose.id, pose.title, Modifier.fillMaxWidth().height(140.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1f)) {
-                            Text(pose.title, style = MaterialTheme.typography.titleLarge)
-                            Text(pose.subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                        Icon(Icons.Outlined.ChevronRight, null)
-                    }
-                    Eyebrow(Icons.Outlined.Timer, "${pose.seconds} secondes · durée indicative")
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("Positions", "Séances", "Mes séances").forEachIndexed { i, label ->
+                    FilterChip(selected = page == i, onClick = { page = i }, label = { Text(label) })
                 }
             }
         }
+        if (page == 0) {
+            item {
+                OutlinedTextField(query, { query = it.take(100) }, Modifier.fillMaxWidth().testTag("yoga_search"),
+                    label = { Text("Nom, zone du corps ou matériel") }, singleLine = true,
+                    leadingIcon = { Icon(Icons.Outlined.Search, null) },
+                    trailingIcon = { if (query.isNotEmpty()) IconButton(onClick = { query = "" }) { Icon(Icons.Outlined.Close, "Effacer la recherche") } })
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterChip(onlyFavorites, { onlyFavorites = !onlyFavorites }, label = { Text("Favoris (${snapshot.favoritePoseIds.size})") },
+                        leadingIcon = { Icon(Icons.Outlined.FavoriteBorder, null, Modifier.size(18.dp)) })
+                    FilterChip(filtersExpanded, { filtersExpanded = !filtersExpanded }, label = { Text("Filtres") },
+                        leadingIcon = { Icon(Icons.Outlined.Tune, null, Modifier.size(18.dp)) })
+                }
+                if (filtersExpanded) {
+                    Text("Niveau", style = MaterialTheme.typography.labelLarge)
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilterChip(level == null, { level = null }, label = { Text("Tous") })
+                        YogaLevel.entries.forEach { option -> FilterChip(level == option.name, { level = option.name }, label = { Text(option.label) }) }
+                    }
+                    Text("Position", style = MaterialTheme.typography.labelLarge)
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilterChip(category == null, { category = null }, label = { Text("Toutes") })
+                        YogaCategory.entries.forEach { option -> FilterChip(category == option.name, { category = option.name }, label = { Text(option.label) }) }
+                    }
+                }
+                if (level != null || category != null) TextButton(onClick = { level = null; category = null }) { Text("Réinitialiser les filtres") }
+                Text("${poses.size} fiche(s)", style = MaterialTheme.typography.labelLarge)
+            }
+            if (poses.isEmpty()) item { ElanCard { Text("Aucune posture pour ces critères. Essaie un autre mot ou retire un filtre.") } }
+            items(poses, key = { it.id }) { pose ->
+                Card(onClick = { onPose(pose.id) }, Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
+                    Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            PoseIllustration(pose.id, pose.title, Modifier.width(108.dp).height(84.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(pose.title, style = MaterialTheme.typography.titleMedium)
+                                Text("${pose.level.label} · ${pose.category.label}", style = MaterialTheme.typography.bodySmall)
+                                Text("${pose.seconds} s" + if (pose.bilateral) " par côté" else "", style = MaterialTheme.typography.labelMedium)
+                            }
+                            IconButton(onClick = { onFavorite(pose.id) }) {
+                                Icon(if (pose.id in snapshot.favoritePoseIds) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
+                                    if (pose.id in snapshot.favoritePoseIds) "Retirer ${pose.title} des favoris" else "Ajouter ${pose.title} aux favoris")
+                            }
+                        }
+                        Text(pose.focus.joinToString(" · "), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
+        } else {
+            if (page == 2) item {
+                FilledTonalButton(onClick = onCreate, enabled = snapshot.customSessions.size < MAX_CUSTOM_SESSIONS, modifier = Modifier.fillMaxWidth()) {
+                    Icon(Icons.Outlined.Add, null); Spacer(Modifier.width(8.dp)); Text("Créer une séance")
+                }
+                if (snapshot.customSessions.isEmpty()) Text("Assemble les positions que tu connais, règle leurs durées et retrouve-les ici.", Modifier.padding(top = 12.dp))
+            }
+            val sessions = if (page == 1) PracticeCatalog.sessions else snapshot.customSessions
+            items(sessions, key = { it.id }) { session ->
+                ElanCard {
+                    Text(session.title, style = MaterialTheme.typography.titleLarge)
+                    Text(session.description)
+                    Text("${formatDuration(session.practiceSeconds.toLong())} de pratique · ${session.steps.size} étapes · ${YogaLevel.entries[session.level].label}",
+                        style = MaterialTheme.typography.labelLarge)
+                    Text("Hors installation et transitions", style = MaterialTheme.typography.bodySmall)
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(onClick = { onSession(session.id) }) { Text("Voir le parcours") }
+                        if (page == 2) {
+                            TextButton(onClick = { onEdit(session.id) }) { Text("Modifier") }
+                            IconButton(onClick = { deleting = session.id }) { Icon(Icons.Outlined.DeleteOutline, "Supprimer ${session.title}") }
+                        }
+                    }
+                }
+            }
+        }
+        item { ElanCard(color = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer) {
+            Eyebrow(Icons.Outlined.Info, "Avant de pratiquer")
+            Text(YogaCatalog.safety, style = MaterialTheme.typography.bodySmall)
+        } }
+    }
+    deleting?.let { id -> AlertDialog(onDismissRequest = { deleting = null }, title = { Text("Supprimer cette séance ?") },
+        text = { Text("L'historique des pratiques déjà enregistrées sera conservé.") },
+        confirmButton = { TextButton(onClick = { onDelete(id); deleting = null }) { Text("Supprimer") } },
+        dismissButton = { TextButton(onClick = { deleting = null }) { Text("Annuler") } }) }
+}
+
+@Composable
+fun YogaDetailScreen(pose: YogaPose, favorite: Boolean, onFavorite: () -> Unit, onPractice: (Int) -> Unit) {
+    var duration by rememberSaveable(pose.id) { mutableStateOf(pose.seconds) }
+    LazyColumn(contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+        item { Text(pose.title, style = MaterialTheme.typography.headlineLarge)
+            Text(pose.sanskrit, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("${pose.level.label} · ${pose.category.label}", style = MaterialTheme.typography.labelLarge) }
+        item { PoseIllustration(pose.id, pose.title, Modifier.fillMaxWidth().height(185.dp))
+            Text("Schéma de repérage uniquement. Lis les étapes, adapte les supports et respecte le côté indiqué.", style = MaterialTheme.typography.bodySmall) }
+        item { OutlinedButton(onClick = onFavorite) { Icon(if (favorite) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder, null)
+            Spacer(Modifier.width(8.dp)); Text(if (favorite) "Retirer des favoris" else "Ajouter aux favoris") } }
+        item { ElanCard {
+            Eyebrow(Icons.Outlined.Chair, pose.equipment)
+            SectionTitle("Pour t'installer")
+            pose.steps.forEachIndexed { i, text -> Text("${i + 1}. $text") }
+        } }
+        item { ElanCard(color = MaterialTheme.colorScheme.tertiaryContainer, contentColor = MaterialTheme.colorScheme.onTertiaryContainer) {
+            Eyebrow(Icons.Outlined.Info, "Précautions")
+            Text(pose.caution)
+            Text("Variante plus douce", style = MaterialTheme.typography.titleMedium)
+            Text(pose.adaptation)
+        } }
+        item { ElanCard {
+            Text(if (pose.bilateral) "Durée par côté" else "Durée indicative", style = MaterialTheme.typography.titleLarge)
+            DurationSelector(duration, { duration = it }, listOf(pose.seconds, 30, 45, 60, 90, 120, 180).distinct().sorted())
+            if (pose.bilateral) Text("Le lecteur prévoit un côté gauche puis un côté droit, avec une transition.")
+            Button(onClick = { onPractice(duration) }, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Outlined.PlayArrow, null); Spacer(Modifier.width(8.dp)); Text("Démarrer la pratique")
+            }
+            Text("Installation de 10 s. Tu peux mettre en pause ou quitter une posture à tout moment. Enregistre la pratique à la fin pour l'ajouter au suivi.", style = MaterialTheme.typography.bodySmall)
+        } }
+        item { Text(YogaCatalog.safety, style = MaterialTheme.typography.bodySmall) }
     }
 }
 
 @Composable
-fun YogaDetailScreen(pose: YogaPose, timer: Countdown, onStart: () -> Unit, onPause: () -> Unit, onReset: () -> Unit) {
-    val view = LocalView.current
-    DisposableEffect(timer.running, view) {
-        val before = view.keepScreenOn
-        if (timer.running) view.keepScreenOn = true
-        onDispose { view.keepScreenOn = before }
+fun DurationSelector(value: Int, onValue: (Int) -> Unit, options: List<Int>) {
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        options.forEach { seconds -> FilterChip(value == seconds, { onValue(seconds) }, label = { Text("${seconds} s") }) }
     }
-    LazyColumn(contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(pose.title, style = MaterialTheme.typography.headlineLarge)
-                Text(pose.subtitle, color = MaterialTheme.colorScheme.onSurfaceVariant)
+}
+
+@Composable
+fun YogaSessionScreen(session: YogaSession, onStart: (Int, Int) -> Unit, onDuplicate: () -> Unit, onPose: (String) -> Unit) {
+    var percent by rememberSaveable(session.id) { mutableStateOf(100) }
+    var transition by rememberSaveable(session.id) { mutableStateOf(10) }
+    val plan = remember(session, percent, transition) { PracticeCatalog.yogaPlan(session, transition, percent) }
+    LazyColumn(contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        item { Text(session.title, style = MaterialTheme.typography.headlineLarge); Text(session.description) }
+        item { ElanCard {
+            Text("${formatDuration(plan.plannedSeconds.toLong())} de pratique", style = MaterialTheme.typography.titleLarge)
+            Text("${formatDuration(plan.totalSeconds.toLong())} au total avec installation et transitions")
+            Text("Durée des postures", style = MaterialTheme.typography.labelLarge)
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf(50, 100, 150, 200).forEach { v -> FilterChip(percent == v, { percent = v }, label = { Text("$v %") }) }
             }
-        }
-        item {
-            ElanCard(color = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer) {
-                PoseIllustration(pose.id, pose.title, Modifier.fillMaxWidth().height(180.dp))
-                Text("Schéma simplifié · adapte les supports à ton confort", style = MaterialTheme.typography.labelSmall)
-            }
-        }
-        item {
-            ElanCard {
-                Eyebrow(Icons.Outlined.Chair, pose.equipment)
-                SectionTitle("Pour t'installer")
-                pose.steps.forEachIndexed { index, step ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text("${index + 1}.", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium)
-                        Text(step, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-                    }
+            Text("Transition entre les postures", style = MaterialTheme.typography.labelLarge)
+            DurationSelector(transition, { transition = it }, listOf(5, 10, 15, 20, 30))
+            Text("La transition n'est jamais une obligation : mets en pause pour t'installer en sécurité.", style = MaterialTheme.typography.bodySmall)
+            Text("Arrête en cas de douleur, vertige ou gêne. En cas de blessure, de problème de santé ou de grossesse, demande un avis adapté avant de pratiquer.", style = MaterialTheme.typography.bodySmall)
+            Button(onClick = { onStart(transition, percent) }, modifier = Modifier.fillMaxWidth()) { Text("Démarrer cette séance") }
+            OutlinedButton(onClick = onDuplicate) { Text("Personnaliser une copie") }
+        } }
+        item { Text("Le parcours", style = MaterialTheme.typography.titleLarge) }
+        items(session.steps.indices.toList(), key = { it }) { i ->
+            val step = session.steps[i]
+            val pose = requireNotNull(YogaCatalog.find(step.poseId))
+            val actual = plan.steps.filter { it.kind == StepKind.POSE }[i].seconds
+            OutlinedCard(onClick = { onPose(step.poseId) }, modifier = Modifier.fillMaxWidth()) {
+                Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text("${i + 1}.", Modifier.padding(end = 14.dp), style = MaterialTheme.typography.titleLarge)
+                    Column(Modifier.weight(1f)) { Text(pose.title, style = MaterialTheme.typography.titleMedium)
+                        Text("$actual s" + if (step.side != PoseSide.NONE) " · ${step.side.label}" else "") }
+                    Icon(Icons.Outlined.ChevronRight, "Lire la fiche")
                 }
             }
         }
-        item {
-            ElanCard(color = MaterialTheme.colorScheme.tertiaryContainer, contentColor = MaterialTheme.colorScheme.onTertiaryContainer) {
-                Eyebrow(Icons.Outlined.Info, "À adapter à ton corps")
-                Text(pose.caution)
-                Text("Arrête en cas de douleur, vertige ou gêne. Tu peux quitter la posture avant la fin.", style = MaterialTheme.typography.bodyMedium)
-            }
-        }
-        item {
-            ElanCard {
-                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text("Ton temps de pause", style = MaterialTheme.typography.titleLarge)
-                    Box(Modifier.size(164.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(progress = { timer.progress }, modifier = Modifier.fillMaxSize(), strokeWidth = 6.dp)
-                        Text(String.format(Locale.ROOT, "%02d:%02d", timer.secondsLeft / 60, timer.secondsLeft % 60),
-                            style = MaterialTheme.typography.headlineLarge,
-                            modifier = Modifier.semantics { contentDescription = "${timer.secondsLeft} secondes restantes" })
-                    }
-                    Text(when { timer.finished -> "La pause est terminée. Reviens doucement."
-                        timer.running -> "Respire naturellement, sans forcer."
-                        timer.remainingMillis < timer.totalMillis -> "En pause. Reprends seulement quand tu es prêt·e."
-                        else -> "Installe-toi, puis démarre quand tu es prêt·e." },
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Button(onClick = if (timer.running) onPause else onStart, enabled = !timer.finished) {
-                            Icon(if (timer.running) Icons.Outlined.Pause else Icons.Outlined.PlayArrow, null)
-                            Spacer(Modifier.width(8.dp)); Text(if (timer.running) "Pause" else "Démarrer")
-                        }
-                        OutlinedButton(onClick = onReset) { Text("Recommencer") }
-                    }
-                    Text("Le minuteur se met en pause quand l'application passe en arrière-plan. Aucun son ni notification.",
-                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            }
-        }
+        item { Text(YogaCatalog.safety, style = MaterialTheme.typography.bodySmall) }
     }
 }

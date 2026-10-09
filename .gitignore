@@ -12,3 +12,7 @@ captures/
 backend/.env
 backend/.env.*
 !backend/.env.example
+
+keystore.properties
+*.apk
+*.aab

@@ -34,3 +34,12 @@ private fun MoodPreview() {
 @Preview(name = "Yoga", showBackground = true, widthDp = 393, heightDp = 852)
 @Composable
 private fun YogaPreview() { ElanTheme(UserSettings(dynamicColors = false)) { YogaScreen {} } }
+
+
+@Preview(name = "Respiration", showBackground = true, widthDp = 393, heightDp = 852)
+@Composable
+private fun BreathingPreview() { ElanTheme(UserSettings(dynamicColors = false)) { BreathingScreen {} } }
+
+@Preview(name = "Suivi", showBackground = true, widthDp = 393, heightDp = 852)
+@Composable
+private fun ProgressPreview() { ElanTheme(UserSettings(dynamicColors = false)) { ProgressScreen(AppSnapshot(), previewDay, {}, {}) } }

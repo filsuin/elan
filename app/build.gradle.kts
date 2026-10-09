@@ -10,12 +10,17 @@ android {
         applicationId = "fr.elan.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 2
-        versionName = "0.2.0"
+        versionCode = 4
+        versionName = "0.3.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+    val updateManifestUrl = providers.gradleProperty("elanUpdateManifestUrl")
+        .orElse("https://elan.maxremonnay.fr/api/v1/app-update")
+        .get()
     buildTypes {
+        debug { buildConfigField("String", "UPDATE_MANIFEST_URL", "\"$updateManifestUrl\"") }
         release {
+            buildConfigField("String", "UPDATE_MANIFEST_URL", "\"$updateManifestUrl\"")
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
