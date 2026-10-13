@@ -176,6 +176,7 @@ fun ElanApp(vm: ElanViewModel = viewModel()) {
             onExport = { export.launch("elan-sauvegarde-$today.json") },
             onImport = { importer.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
             onErase = vm::eraseAll, notificationsAllowed = notificationsAllowed,
+            onUpdateNotifications = vm::setUpdateNotifications,
             onReminder = { enabled ->
                 if (!enabled) vm.setReminder(false)
                 else if (Build.VERSION.SDK_INT >= 33 && !ReminderScheduler.allowed(context)) permission.launch(Manifest.permission.POST_NOTIFICATIONS)

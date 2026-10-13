@@ -12,7 +12,7 @@
 | XML / TOML / JSON | Lecture structurée réussie ; aucun caractère de contrôle inattendu dans les sources. |
 | Alias Gradle | 27 références vers le catalogue vérifiées. Pas une résolution réseau des dépendances. |
 | Scripts shell | Syntaxe vérifiée par `sh -n`. Scripts Windows non exécutés ici. |
-| Manifest | Ressources référencées présentes ; permissions notifications/redémarrage uniquement ; pas de permission Internet. |
+| Manifest | Ressources référencées présentes ; permissions Internet, notifications et redémarrage utilisées par les fonctions documentées. |
 | Tests unitaires Gradle `:app:testDebugUnitTest` | Réussis le 9 octobre 2026, y compris JSON v1/v2 et règles de pratique. |
 | Android Lint `:app:lintDebug` | Réussi, 0 erreur. |
 | APK debug `:app:assembleDebug` | Réussi avec SDK Android 36 et JDK 21. APK 0.3.0 généré. |

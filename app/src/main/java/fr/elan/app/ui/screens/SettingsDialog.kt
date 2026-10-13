@@ -30,6 +30,7 @@ fun SettingsDialog(
     onExport: () -> Unit, onImport: () -> Unit, onErase: () -> Unit,
     notificationsAllowed: Boolean = false,
     onReminder: (Boolean) -> Unit = {}, onReminderTime: (Int, Int) -> Unit = { _, _ -> }, onNotificationSettings: () -> Unit = {},
+    onUpdateNotifications: (Boolean) -> Unit = {},
 ) {
     val context = LocalContext.current
     var name by rememberSaveable { mutableStateOf(settings.firstName) }
@@ -73,11 +74,18 @@ fun SettingsDialog(
                     Text("Notifications non autorisées par Android. Le rappel ne pourra pas s'afficher.", style = MaterialTheme.typography.bodySmall)
                     TextButton(onClick = onNotificationSettings) { Text("Ouvrir les réglages de notification") }
                 }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text("Annonces de nouvelles versions", style = MaterialTheme.typography.titleSmall)
+                        Text("Facultatif · Firebase reçoit un identifiant technique de notification, jamais ton journal.", style = MaterialTheme.typography.bodySmall)
+                    }
+                    Switch(settings.updateNotificationsEnabled, onUpdateNotifications, enabled = !busy)
+                }
                 HorizontalDivider()
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Outlined.Lock, null); Text("Mes données", style = MaterialTheme.typography.titleMedium)
                 }
-                Text("Aucun compte, aucune publicité, aucun suivi. Le journal reste dans l'espace privé de l'application. Il n'est pas chiffré par un mot de passe propre à Élan.")
+                Text("Aucun compte ni publicité. Le journal reste dans l'espace privé de l'application et n'est pas envoyé à Élan. Il n'est pas chiffré par un mot de passe propre à Élan.")
                 Text("La sauvegarde automatique Android est désactivée. Pense à exporter avant de désinstaller l'application ou de changer de téléphone.")
                 OutlinedButton(onClick = { confirmExport = true }, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text("Exporter ma sauvegarde JSON") }
                 OutlinedButton(onClick = onImport, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text("Restaurer une sauvegarde") }
@@ -96,7 +104,7 @@ fun SettingsDialog(
     )
     if (confirmExport) {
         AlertDialog(onDismissRequest = { confirmExport = false }, title = { Text("Exporter des données personnelles") },
-            text = { Text("Le fichier contiendra ton prénom, tes notes, humeurs, routines, victoires, favoris, séances, historique et réglages en clair. Choisis un emplacement de confiance. Un fournisseur cloud sélectionné dans le sélecteur Android peut synchroniser ce fichier.") },
+            text = { Text("Le fichier contiendra ton prénom, tes notes, humeurs, routines, victoires, favoris, séances, historique et réglages en clair, sans chiffrement ni mot de passe. Choisis un emplacement de confiance : un fournisseur cloud sélectionné dans le sélecteur Android peut synchroniser ce fichier.") },
             confirmButton = { TextButton(onClick = { confirmExport = false; onExport() }) { Text("Choisir un emplacement") } },
             dismissButton = { TextButton(onClick = { confirmExport = false }) { Text("Annuler") } })
     }

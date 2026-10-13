@@ -4,6 +4,7 @@ import android.app.Application
 import android.net.Uri
 import android.os.SystemClock
 import androidx.lifecycle.AndroidViewModel
+import com.google.firebase.messaging.FirebaseMessaging
 import androidx.lifecycle.viewModelScope
 import fr.elan.app.ElanApplication
 import fr.elan.app.content.YogaCatalog
@@ -245,6 +246,17 @@ class ElanViewModel(application: Application) : AndroidViewModel(application) {
             reminderHour = hour ?: s.settings.reminderHour, reminderMinute = minute ?: s.settings.reminderMinute)) }
     }
     fun notifyPermissionDenied() = perform { messages.send("Notifications non autorisées. Le rappel reste désactivé.") }
+
+    fun setUpdateNotifications(enabled: Boolean) = perform {
+        val messaging = FirebaseMessaging.getInstance()
+        if (enabled) {
+            messaging.subscribeToTopic("elan-app-updates").await()
+        } else {
+            messaging.unsubscribeFromTopic("elan-app-updates").await()
+        }
+        repository.update { it.copy(settings = it.settings.copy(updateNotificationsEnabled = enabled)) }
+        messages.send(if (enabled) "Notifications de mise à jour activées." else "Notifications de mise à jour désactivées.")
+    }
 
     fun beginEditing(session: YogaSession? = null, copy: Boolean = false) {
         if (_draftSaving.value) return
