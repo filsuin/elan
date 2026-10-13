@@ -2,7 +2,7 @@
 
 ## 0.3.3 - 9 octobre 2026
 
-Notifications push FCM lors de la publication d'une version, avec le contrôle périodique conservé en secours. L'APK requiert la configuration Android Firebase ; l'envoi serveur requiert un compte de service gardé uniquement sur le serveur.
+La publication d'une version est signalée par le contrôle périodique du manifeste public du serveur. L'application Android et le backend n'utilisent aucun service de notification tiers.
 
 ## 0.3.2 - 9 octobre 2026
 
@@ -43,4 +43,3 @@ Rétablissement des fichiers absents du ZIP source : catalogue Gradle, propriét
 ### Validation
 
 200 contrôles métier exécutés ; analyse syntaxique Kotlin et contrôles structurels effectués. Tests Gradle/JSON et tests Compose fournis mais non exécutés ici. Aucun APK ni résultat de test Android 0.3.0 n'est revendiqué.
-

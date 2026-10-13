@@ -18,7 +18,6 @@ data class UserSettings(
     val reminderEnabled: Boolean = false,
     val reminderHour: Int = 19,
     val reminderMinute: Int = 0,
-    val updateNotificationsEnabled: Boolean = false,
 )
 
 data class RoutineTask(val id: String, val title: String)

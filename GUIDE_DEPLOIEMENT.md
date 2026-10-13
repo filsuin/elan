@@ -143,7 +143,7 @@ L'import valide le contenu puis demande confirmation avant de remplacer le journ
 
 **Le format v2 n'est pas promis compatible avec la version 0.2.0.** Garder l'export v1 fait avant migration et l'ancien APK/signature. Pour revenir à l'ancienne version, exporter aussi les données récentes à titre d'archive, puis préparer un retour contrôlé sur un appareil de test avec l'ancienne sauvegarde v1. Ne pas forcer une rétrogradation en place sur des données v2.
 
-La sauvegarde automatique Android est désactivée. Le JSON exporté contient des données personnelles en clair, sans chiffrement ni mot de passe : choisir un emplacement de confiance. Un fournisseur cloud choisi dans le sélecteur Android peut le synchroniser. La permission Internet est utilisée pour les métadonnées publiques de version et, uniquement après activation dans les réglages, pour les annonces Firebase ; le journal n'est pas transmis.
+La sauvegarde automatique Android est désactivée. Le JSON exporté contient des données personnelles en clair, sans chiffrement ni mot de passe : choisir un emplacement de confiance. Un fournisseur cloud choisi dans le sélecteur Android peut le synchroniser. La permission Internet est utilisée uniquement pour les métadonnées publiques de version ; le journal n'est pas transmis.
 
 ## 8. macOS et Linux
 

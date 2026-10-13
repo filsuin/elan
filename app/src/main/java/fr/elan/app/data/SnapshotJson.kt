@@ -20,7 +20,6 @@ object SnapshotJson {
                 put("firstName", firstName); put("theme", theme.name); put("dynamicColors", dynamicColors)
                 put("weeklyGoalMinutes", weeklyGoalMinutes); put("soundEnabled", soundEnabled); put("voiceEnabled", voiceEnabled)
                 put("reminderEnabled", reminderEnabled); put("reminderHour", reminderHour); put("reminderMinute", reminderMinute)
-                put("updateNotificationsEnabled", updateNotificationsEnabled)
             }
         })
         put("routines", JSONArray().apply {
@@ -69,7 +68,6 @@ object SnapshotJson {
             reminderEnabled = bool(so, "reminderEnabled"),
             reminderHour = int(so, "reminderHour").also { require(it in 0..23) },
             reminderMinute = int(so, "reminderMinute").also { require(it in 0..59) },
-            updateNotificationsEnabled = if (so.has("updateNotificationsEnabled")) bool(so, "updateNotificationsEnabled") else false,
         )
         val routines = objects(obj, "routines", MAX_ROUTINES).map {
             RoutineTask(string(it, "id", 100, true), string(it, "title", MAX_TASK_LENGTH, true))

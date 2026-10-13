@@ -2,7 +2,7 @@
 
 Application Android native en français (Kotlin, Jetpack Compose, Material 3). Cette livraison enrichit le projet `elan.zip` fourni : **48 fiches au lieu de 6, 10 parcours, séances personnalisables, respiration, suivi et rappel quotidien facultatif**. Le journal, les routines et les thèmes existants sont conservés.
 
-**Statut : version 0.3.3 en préparation.** Les notifications d'annonces utilisent Firebase Cloud Messaging uniquement après activation volontaire dans les réglages ; le serveur doit être configuré avec les identifiants Firebase avant l'envoi des pushes.
+**Statut : version 0.3.3 en préparation.** Les mises à jour sont vérifiées périodiquement depuis le manifeste public du serveur ; aucune plateforme de notifications tierce n'est requise.
 
 ## Ouvrir et déployer
 
@@ -30,7 +30,7 @@ Le lecteur de pratique propose des transitions, les côtés gauche/droit, pause/
 
 ## Données, confidentialité et limites
 
-L'app ne crée aucun compte, ne contient aucune publicité et ne transmet pas le journal. Le stockage local reste dans l'espace privé Android de l'application. La permission Internet sert à vérifier les métadonnées publiques de version et, seulement si l'utilisateur active **Annonces de nouvelles versions**, à s'abonner au sujet Firebase Cloud Messaging `elan-app-updates`. Firebase peut alors traiter les identifiants techniques nécessaires à l'abonnement et à la livraison des notifications ; ni le journal, ni les sauvegardes, ni le prénom ne sont envoyés. La désactivation retire l'abonnement au sujet. Les notifications Android peuvent également être bloquées par le système.
+L'app ne crée aucun compte, ne contient aucune publicité et ne transmet pas le journal. Le stockage local reste dans l'espace privé Android de l'application. La permission Internet sert uniquement à vérifier les métadonnées publiques de version sur le serveur configuré. Aucun service de notification tiers ni identifiant publicitaire n'est utilisé.
 
 Le stockage privé `elan-journal-v1.json` conserve son nom pour reprendre les données existantes. Le codec lit les sauvegardes v1 et v2 ; les écritures et exports utilisent v2. Une restauration remplace les données après confirmation et désactive le rappel. Le JSON exporté est en clair. Aucun mot de passe ou chiffrement applicatif n'est ajouté.
 
@@ -53,8 +53,6 @@ Version : `versionCode = 6`, `versionName = "0.3.3"`, identifiant conservé : `f
 
 Avant de rendre ce dépôt public :
 
-1. Restreindre la clé API Firebase dans Google Cloud au package `fr.elan.app`, aux certificats de signature utilisés et aux seules API nécessaires.
-2. Vérifier les règles Firebase et activer les alertes de quota/facturation.
-3. Ne jamais ajouter de compte de service, clé privée, keystore ou fichier `.env` réel. Les secrets du backend doivent rester dans l'environnement de déploiement.
-4. Remplacer toute clé Firebase client déjà exposée avec des restrictions insuffisantes et mettre à jour `app/google-services.json`.
-5. Relire les obligations d'information et de consentement applicables avant de distribuer l'application.
+1. Ne jamais ajouter de compte de service, clé privée, keystore ou fichier `.env` réel. Les secrets du backend doivent rester dans l'environnement de déploiement.
+2. Vérifier les URLs HTTPS du manifeste de mise à jour et la signature des APK avant diffusion.
+3. Relire les obligations d'information applicables avant de distribuer l'application.

@@ -30,7 +30,6 @@ fun SettingsDialog(
     onExport: () -> Unit, onImport: () -> Unit, onErase: () -> Unit,
     notificationsAllowed: Boolean = false,
     onReminder: (Boolean) -> Unit = {}, onReminderTime: (Int, Int) -> Unit = { _, _ -> }, onNotificationSettings: () -> Unit = {},
-    onUpdateNotifications: (Boolean) -> Unit = {},
 ) {
     val context = LocalContext.current
     var name by rememberSaveable { mutableStateOf(settings.firstName) }
@@ -73,13 +72,6 @@ fun SettingsDialog(
                 if (!notificationsAllowed) {
                     Text("Notifications non autorisées par Android. Le rappel ne pourra pas s'afficher.", style = MaterialTheme.typography.bodySmall)
                     TextButton(onClick = onNotificationSettings) { Text("Ouvrir les réglages de notification") }
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Text("Annonces de nouvelles versions", style = MaterialTheme.typography.titleSmall)
-                        Text("Facultatif · Firebase reçoit un identifiant technique de notification, jamais ton journal.", style = MaterialTheme.typography.bodySmall)
-                    }
-                    Switch(settings.updateNotificationsEnabled, onUpdateNotifications, enabled = !busy)
                 }
                 HorizontalDivider()
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {

@@ -23,7 +23,6 @@ dependencies {
     implementation("org.postgresql:postgresql:42.7.7")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     implementation("ch.qos.logback:logback-classic:1.5.18")
-    implementation("com.google.firebase:firebase-admin:9.11.0")
 
     testImplementation("io.ktor:ktor-server-test-host-jvm:$ktorVersion")
     testImplementation(kotlin("test"))
